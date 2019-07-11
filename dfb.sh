@@ -48,6 +48,9 @@ main() {
     elif [ "${1:-}" == "domains" ]
     then
         domains "$@"
+    elif [ "${1:-}" == "backup" ]
+    then
+        backup "$@"
     else
         print_main_help
     fi
@@ -74,6 +77,7 @@ Usage:
 Available Commands:
   groups      Group commands.
   domain      Domain commands.
+  backup      Backup a group of domains to a repo.
 
 Options:
   -h --help     Show this screen.
@@ -185,6 +189,13 @@ validate_group() {
     fi
 }
 
+validate_repo() {
+    if [ ! -f "$DFB_PATH/$1/repos/$2" ]; then
+        echo "please provide a valid repo"
+        exit 1
+    fi
+}
+
 domains() {
     verify_env
     if [[ "${2:-}" =~ ^-h|--help$  ]]
@@ -263,6 +274,69 @@ exclusions: node_modules vendor
 CONTENT
 )
     echo "$content" > "$DFB_PATH/$1/domains/$domain"
+}
+
+backup_domain() {
+    password="$1"
+    repo_path="$2"
+    domain="$3"
+    domain_path=$(cat "./$domain" | ggrep -E 'path' | egrep -o '[^:]+$' | tr -d '[:space:]')
+
+    cd $domain_path
+    echo "$password" | restic -r $repo_path backup . --tag "$domain" --json
+}
+
+backup() {
+    if [[ $2 == "help" ]]; then
+        echo "Usage:"
+        echo "  $PROGRAM backup [group] [repo] [<timestamp-file>]"
+        exit
+    fi
+    group=$2
+    repo_name=$3
+    repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
+    validate_group $group
+    validate_repo $group $repo_name
+    domains_directory="$DFB_PATH/$group/domains"
+
+    promt_for_password
+    verify_password $password $repo_path
+
+    cd $domains_directory
+    find . -type f -print0 |
+    while IFS= read -r -d '' domain; do
+        domain=$(echo $domain | sed -e 's/^\.\///g')
+
+        printf "Backing up "
+        echo $domain
+
+        backup_domain $password $repo_path $domain
+        cd $domains_directory
+    done
+}
+
+promt_for_password() {
+    password=$(osascript <<END
+set x to display dialog "What is your password?" default answer "" with hidden answer
+set y to (text returned of x)
+END
+    )
+    if [ -z "$(echo ${password//[[:blank:]]/})" ]; then
+        osascript -e "display notification with title \"Password cannot be empty\""
+        exit 1
+    fi
+}
+
+verify_password() {
+    password="$1"
+    repo_path="$2"
+
+    if echo "$password" | restic -r "$repo_path" key list; then
+        echo "valid password"
+    else
+        osascript -e "display notification \"for $repo_path\" with title \"Invalid password\""
+        exit 1
+    fi
 }
 
 main "$@"
