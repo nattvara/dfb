@@ -250,8 +250,12 @@ add_domain() {
         echo "please provide a domain"
         exit 1
     fi
-    domain=$(basename "$2")
+    if [ ! -d $2 ]; then
+        echo "domain is not a valid directory"
+        exit 1
+    fi
 
+    domain=$(basename "$2")
     content=$(cat <<CONTENT
 path: $2
 symlink:
