@@ -20,6 +20,11 @@ verify_env() {
         exit 1
     fi
 
+    if [ "$(command -v ggrep)" == "" ]; then
+        echo "GNU grep is not installed, run: brew install grep"
+        exit 1
+    fi
+
     if [ ! -d "$DFB_PATH" ]; then
         echo "creating dfb root directory at $DFB_PATH"
         mkdir "$DFB_PATH"
@@ -89,6 +94,12 @@ groups() {
     elif [ "${2:-}" == "domains" ]
     then
         list_group_domains
+    elif [ "${2:-}" == "repos" ]
+    then
+        list_group_repos "$3"
+    elif [ "${2:-}" == "add-repo" ]
+    then
+        add_group_repo "$3"
     else
         print_groups_help
     fi
@@ -108,6 +119,8 @@ Available Commands:
   ls        List groups.
   add       Add new group.
   domains   List domains for a group.
+  repos     List restic repos for a group.
+  add-repo  Add restic repo for a group.
 
 Options:
   -h --help     Show this screen.
@@ -145,6 +158,39 @@ add_group() {
 
 list_group_domains() {
     echo "list domains for group"
+}
+
+list_group_repos() {
+    validate_group "$@"
+    cd "$DFB_PATH/$1/repos/"
+    find . -type f -maxdepth 1 -print0 |
+    while IFS= read -r -d '' file; do
+        printf "$(echo $file | sed -e 's/^\.\///g'): "
+        cat $file
+    done
+}
+
+add_group_repo() {
+    validate_group "$@"
+
+    printf "Enter name of repo: "
+    read name
+    printf "Enter repo path: "
+    read repo
+
+    echo "$repo" > "$DFB_PATH/$1/repos/$name"
+}
+
+validate_group() {
+    if [ "$1" == "" ]; then
+        echo "please provide a group."
+        exit 1
+    fi
+
+    if [ ! -d "$DFB_PATH/$1" ]; then
+        echo "please provide a valid group."
+        exit 1
+    fi
 }
 
 main "$@"
