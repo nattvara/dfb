@@ -116,11 +116,31 @@ HEREDOC
 }
 
 list_groups() {
-    echo "list_groups"
+    printf "Groups: \n\n"
+
+    cd $DFB_PATH
+    find . -type d ! -path . -maxdepth 1 -print0 |
+    while IFS= read -r -d '' dir; do
+        dir="${dir//.}"
+        dir="${dir/\/}"
+        echo "$dir"
+    done
 }
 
 add_group() {
-    echo "add_group"
+    printf "Enter name of new group: "
+    read group
+
+    cd $DFB_PATH
+
+    if [ -d "$group" ]; then
+        echo "group already exists!"
+        exit 1
+    fi
+
+    mkdir "$group"
+    mkdir "$group/repos"
+    mkdir "$group/domains"
 }
 
 list_group_domains() {
