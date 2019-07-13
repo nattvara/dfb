@@ -25,6 +25,11 @@ verify_env() {
         exit 1
     fi
 
+    if [ "$(command -v dfb-progress-parser)" == "" ]; then
+        echo "dfb-progress-parser, view installation instructions in README.md that was distributed with this software"
+        exit 1
+    fi
+
     if [ ! -d "$DFB_PATH" ]; then
         echo "creating dfb root directory at $DFB_PATH"
         mkdir "$DFB_PATH"
@@ -283,10 +288,11 @@ backup_domain() {
     domain_path=$(cat "./$domain" | ggrep -E 'path' | egrep -o '[^:]+$' | tr -d '[:space:]')
 
     cd $domain_path
-    echo "$password" | restic -r $repo_path backup . --tag "$domain" --json
+    echo "$password" | restic -r $repo_path backup . --tag "$domain" --json | dfb-progress-parser "backing up $domain"
 }
 
 backup() {
+    verify_env
     if [[ $2 == "help" ]]; then
         echo "Usage:"
         echo "  $PROGRAM backup [group] [repo] [<timestamp-file>]"
@@ -306,10 +312,6 @@ backup() {
     find . -type f -print0 |
     while IFS= read -r -d '' domain; do
         domain=$(echo $domain | sed -e 's/^\.\///g')
-
-        printf "Backing up "
-        echo $domain
-
         backup_domain $password $repo_path $domain
         cd $domains_directory
     done
@@ -331,7 +333,7 @@ verify_password() {
     password="$1"
     repo_path="$2"
 
-    if echo "$password" | restic -r "$repo_path" key list; then
+    if echo "$password" | restic -r "$repo_path" key list > /dev/null; then
         echo "valid password"
     else
         osascript -e "display notification \"for $repo_path\" with title \"Invalid password\""
