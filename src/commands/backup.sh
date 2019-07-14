@@ -13,7 +13,10 @@ backup_domain() {
 
     if [[ $symlink != "" ]]; then
         if [ ! -d $symlink ]; then
-            printf "backing up $domain\t unavailible\n"
+            printf "backing up $domain\t"
+            tput setaf 8;
+            echo "unavailible"
+            tput sgr0;
             return
         fi
 
