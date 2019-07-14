@@ -65,23 +65,45 @@ add_domain() {
         echo "  $ $PROGRAM domains add [group] [domain] [<symlink>]"
         exit
     fi
-    validate_group "$1"
+    group=$1
+    path=$2
+    symlink=$3
+    domain=$(basename "$path")
 
-    if [[ $2 == "" ]]; then
+    validate_group $group
+
+    if [[ $path == "" ]]; then
         echo "please provide a domain"
         exit 1
     fi
-    if [ ! -d $2 ]; then
+    if [ ! -d $path ] && [[ $symlink == "" ]]; then
         echo "domain is not a valid directory"
         exit 1
     fi
 
-    domain=$(basename "$2")
+    if [[ $symlink != "" ]]; then
+        create_symlink $domain $symlink
+    fi
+
     content=$(cat <<CONTENT
-path: $2
-symlink:
+path: $path
+symlink: $symlink
 exclusions: node_modules vendor
 CONTENT
 )
-    echo "$content" > "$DFB_PATH/$1/domains/$domain"
+    echo "$content" > "$DFB_PATH/$group/domains/$domain"
+}
+
+create_symlink() {
+    domain=$1
+    symlink=$2
+
+    symlinks="$DFB_PATH/$group/symlinks"
+
+    if [ ! -d $symlinks ]; then
+        echo "creating symlinks directory"
+        mkdir $symlinks
+    fi
+
+    ln -s $symlink "$symlinks/$domain"
 }
