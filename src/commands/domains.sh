@@ -105,5 +105,18 @@ create_symlink() {
         mkdir $symlinks
     fi
 
+    if [ -f "$symlinks/$domain" ]; then
+        rm "$symlinks/$domain"
+    fi
+
+    if [ -f "$HOME/$domain" ] && [ ! -L "$HOME/$domain" ]; then
+        echo "$HOME/$domain already exists, please remove manually if a link should exist here"
+        exit 1
+    elif [ -d "$HOME/$domain" ] && [ ! -L "$HOME/$domain" ]; then
+        echo "$HOME/$domain already exists, please remove manually if a link should exist here"
+        exit 1
+    fi
+
     ln -s $symlink "$symlinks/$domain"
+    ln -s "$symlinks/$domain" "$HOME/$domain"
 }
