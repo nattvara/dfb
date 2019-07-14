@@ -17,6 +17,9 @@ domains() {
     elif [ "${2:-}" == "ls" ]
     then
         list_domains
+    elif [ "${2:-}" == "rm" ]
+    then
+        remove_domain "$3" "$4"
     else
         print_domains_help
     fi
@@ -36,6 +39,7 @@ Usage:
 Available Commands:
   ls        List domains.
   add       Add new domain.
+  rm        Remove a domain.
 
 Options:
   -h --help     Show this screen.
@@ -65,23 +69,89 @@ add_domain() {
         echo "  $ $PROGRAM domains add [group] [domain] [<symlink>]"
         exit
     fi
-    validate_group "$1"
+    group=$1
+    path=$2
+    symlink=$3
+    domain=$(basename "$path")
 
-    if [[ $2 == "" ]]; then
+    validate_group $group
+
+    if [[ $path == "" ]]; then
         echo "please provide a domain"
         exit 1
     fi
-    if [ ! -d $2 ]; then
-        echo "domain is not a valid directory"
+    if [ ! -d $path ] && [ ! -f $path ] && [[ $symlink == "" ]]; then
+        echo "domain is not a valid directory or file"
         exit 1
     fi
 
-    domain=$(basename "$2")
+    if [[ $symlink != "" ]]; then
+        create_symlink $domain $symlink
+    fi
+
     content=$(cat <<CONTENT
-path: $2
-symlink:
+path: $path
+symlink: $symlink
 exclusions: node_modules vendor
 CONTENT
 )
-    echo "$content" > "$DFB_PATH/$1/domains/$domain"
+    echo "$content" > "$DFB_PATH/$group/domains/$domain"
+}
+
+create_symlink() {
+    domain=$1
+    symlink=$2
+
+    symlinks="$DFB_PATH/$group/symlinks"
+
+    if [ ! -d $symlinks ]; then
+        echo "creating symlinks directory"
+        mkdir $symlinks
+    fi
+
+    if [ -f "$symlinks/$domain" ]; then
+        rm "$symlinks/$domain"
+    fi
+
+    if [ -f "$HOME/$domain" ] && [ ! -L "$HOME/$domain" ]; then
+        echo "$HOME/$domain already exists, please remove manually if a link should exist here"
+        exit 1
+    elif [ -d "$HOME/$domain" ] && [ ! -L "$HOME/$domain" ]; then
+        echo "$HOME/$domain already exists, please remove manually if a link should exist here"
+        exit 1
+    fi
+
+    ln -s $symlink "$symlinks/$domain"
+    ln -s "$symlinks/$domain" "$HOME/$domain"
+}
+
+remove_domain() {
+    if [[ $1 == "help" ]]; then
+        echo "Usage:"
+        echo "  $ $PROGRAM domains rm [group] [domain]"
+        exit
+    fi
+    group=$1
+    domain=$2
+
+    validate_group $group
+    validate_domain $group $domain
+
+
+    if [[ $symlink != "" ]]; then
+        create_symlink $domain $symlink
+    fi
+
+    echo "deleting record of domain $domain"
+    rm "$DFB_PATH/$group/domains/$domain"
+
+    if [ -L "$DFB_PATH/$group/symlinks/$domain" ]; then
+        echo "deleting symlink to real directory"
+        rm "$DFB_PATH/$group/symlinks/$domain"
+    fi
+
+    printf "\n\nNOTE: this does not delete the actual directory"
+    printf " it will simply not be included in any more backups"
+    printf " neither will it be removed from previous backups\n\n"
+    printf "you will have to delete the data of \"$domain\" yourself\n"
 }
