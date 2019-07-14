@@ -9,8 +9,19 @@ backup_domain() {
     repo_path="$2"
     domain="$3"
     domain_path=$(cat "./$domain" | ggrep -E 'path' | egrep -o '[^:]+$' | tr -d '[:space:]')
+    symlink=$(cat "./$domain" | ggrep -E 'symlink' | egrep -o '[^:]+$' | tr -d '[:space:]')
 
-    cd $domain_path
+    if [[ $symlink != "" ]]; then
+        if [ ! -d $symlink ]; then
+            printf "backing up $domain\t unavailible\n"
+            return
+        fi
+
+        cd $symlink
+    else
+        cd $domain_path
+    fi
+
     echo "$password" | restic -r $repo_path backup . --tag "$domain" --json | dfb-progress-parser "backing up $domain"
 }
 
