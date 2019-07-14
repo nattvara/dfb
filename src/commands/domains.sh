@@ -80,8 +80,8 @@ add_domain() {
         echo "please provide a domain"
         exit 1
     fi
-    if [ ! -d $path ] && [[ $symlink == "" ]]; then
-        echo "domain is not a valid directory"
+    if [ ! -d $path ] && [ ! -f $path ] && [[ $symlink == "" ]]; then
+        echo "domain is not a valid directory or file"
         exit 1
     fi
 

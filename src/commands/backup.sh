@@ -21,11 +21,20 @@ backup_domain() {
         fi
 
         cd $symlink
+    elif [ -f $domain_path ]; then
+        parent_dir=$(dirname $domain_path)
+        cd $parent_dir
     else
         cd $domain_path
     fi
 
-    echo -n "$password" | restic -r $repo_path backup . --tag "$domain" --json | dfb-progress-parser "  backing up $domain"
+    if [ -f $domain_path ]; then
+        restic_backup_path=$(basename $domain_path)
+    else
+        restic_backup_path="."
+    fi
+
+    echo -n "$password" | restic -r $repo_path backup "$restic_backup_path" --tag "$domain" --json | dfb-progress-parser "  backing up $domain"
     printf "\r"
 }
 
