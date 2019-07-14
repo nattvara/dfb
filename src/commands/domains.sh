@@ -17,6 +17,9 @@ domains() {
     elif [ "${2:-}" == "ls" ]
     then
         list_domains
+    elif [ "${2:-}" == "rm" ]
+    then
+        remove_domain "$3" "$4"
     else
         print_domains_help
     fi
@@ -36,6 +39,7 @@ Usage:
 Available Commands:
   ls        List domains.
   add       Add new domain.
+  rm        Remove a domain.
 
 Options:
   -h --help     Show this screen.
@@ -119,4 +123,35 @@ create_symlink() {
 
     ln -s $symlink "$symlinks/$domain"
     ln -s "$symlinks/$domain" "$HOME/$domain"
+}
+
+remove_domain() {
+    if [[ $1 == "help" ]]; then
+        echo "Usage:"
+        echo "  $ $PROGRAM domains rm [group] [domain]"
+        exit
+    fi
+    group=$1
+    domain=$2
+
+    validate_group $group
+    validate_domain $group $domain
+
+
+    if [[ $symlink != "" ]]; then
+        create_symlink $domain $symlink
+    fi
+
+    echo "deleting record of domain $domain"
+    rm "$DFB_PATH/$group/domains/$domain"
+
+    if [ -L "$DFB_PATH/$group/symlinks/$domain" ]; then
+        echo "deleting symlink to real directory"
+        rm "$DFB_PATH/$group/symlinks/$domain"
+    fi
+
+    printf "\n\nNOTE: this does not delete the actual directory"
+    printf " it will simply not be included in any more backups"
+    printf " neither will it be removed from previous backups\n\n"
+    printf "you will have to delete the data of \"$domain\" yourself\n"
 }
