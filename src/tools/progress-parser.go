@@ -76,12 +76,14 @@ func main() {
 
 func printStatusMessage(msg *StatusMessage, prefix string) {
 	clearLine()
-	fmt.Printf("%s \t %s", prefix, msg.GetProcenString())
+	fmt.Printf("%s \033[50D\033[50C %s", prefix, msg.GetProcenString())
 }
 
 func printSummaryMessage(msg *SummaryMessage, prefix string) {
 	clearLine()
-	fmt.Printf("%s \t 100%% ⏱  %v \n", prefix, msg.GetDurationString())
+	fmt.Printf("%s \033[50D\033[50C 100%% ⏱  %v \n", prefix, msg.GetDurationString())
+	moveCursorDownOneLine()
+	clearLine()
 }
 
 func printUnknownMessage(msg *Message) {
@@ -89,7 +91,16 @@ func printUnknownMessage(msg *Message) {
 }
 
 func clearLine() {
-	runes := make([]rune, tm.Width())
-	fmt.Print(string(runes))
-	fmt.Print("\r \r")
+	fmt.Print("\r \r \033[50D\033[0C")
+
+	width := tm.Width()
+	for i := 1; i <= width; i++ {
+		fmt.Print("")
+	}
+
+	fmt.Print("\033[50D\033[0C \r \r")
+}
+
+func moveCursorDownOneLine() {
+	fmt.Print("\033[1B\033[0C")
 }
