@@ -17,3 +17,5 @@ cat src/helpers/validation.sh >> $OUT && printf "\n" >> $OUT
 echo 'main "$@"' >> $OUT
 
 chmod +x $OUT
+
+go build -o ./build/dfb-progress-parser -i ./src/tools/progress-parser.go
