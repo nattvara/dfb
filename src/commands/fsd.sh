@@ -17,6 +17,9 @@ fsd() {
     elif [ "${2:-}" == "stop" ]
     then
         fsd_stop
+    elif [ "${2:-}" == "status" ]
+    then
+        fsd_status
     else
         print_fsd_help
     fi
@@ -37,6 +40,7 @@ Usage:
 Available Commands:
   start       Start the agent.
   stop        Stop the agent.
+  status      Check the status of the agent.
 
 Options:
   -h --help     Show this screen.
@@ -50,9 +54,10 @@ fsd_start() {
 
 fsd_stop() {
     echo "stopping agent"
-    if [ $(launchctl unload $launch_agent) ]; then
-        echo "agent stopped"
-    else
-        echo "agent wasn't running"
-    fi
+    launchctl unload $launch_agent
+}
+
+fsd_status() {
+    printf "PID\tStatus\tLabel\n"
+    launchctl list | ggrep com.dfb.fsd
 }
