@@ -3,7 +3,7 @@
 <plist version="1.0">
 	<dict>
 		<key>Label</key>
-		<string>org.kristoffersson.dfb.fsd</string>
+		<string>com.dfb.fsd</string>
 		<key>Program</key>
 		<string>/usr/local/bin/dfb-fsd</string>
 		<key>RunAtLoad</key>

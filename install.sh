@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-launch_agent="$HOME/Library/LaunchAgents/org.kristoffersson.dfb.fsd.plist"
+launch_agent="$HOME/Library/LaunchAgents/com.dfb.fsd.plist"
 
 if [ -f $launch_agent ]; then
     launchctl stop $launch_agent
