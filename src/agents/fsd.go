@@ -1,13 +1,11 @@
 package main
 
 import (
-	"fmt"
+	g "dfb/src/internal/groups"
 	"log"
 	"os"
 	"os/signal"
-	"os/user"
 	"syscall"
-	"time"
 )
 
 func main() {
@@ -19,33 +17,29 @@ func main() {
 		os.Exit(0)
 	}()
 
-	for range time.Tick(2 * time.Second) {
-		writeToFile()
-	}
-}
+	groups := g.FetchGroups()
+	groupsMounted := g.NumberOfGroupsMounted(groups)
 
-func writeToFile() {
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
+	for _, group := range groups {
 
-	filename := fmt.Sprintf("%s/Desktop/test.log", usr.HomeDir)
+		domains := group.Domains()
 
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	date := time.Now()
-
-	if _, err := f.Write([]byte(date.String() + "\n")); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := f.Write([]byte("fsd" + "\n")); err != nil {
-		log.Fatal(err)
-	}
-	if err := f.Close(); err != nil {
-		log.Fatal(err)
+		if group.IsMounted() {
+			for _, domain := range domains {
+				domain.CreatePathIfNotCreated()
+				if !domain.LinkToBackupsExist() {
+					log.Printf("[domain: %s] has no link to backups, creating", domain.Name)
+					domain.CreateLinkToBackups(group.Mountpoint())
+				}
+			}
+		} else if groupsMounted == 0 {
+			for _, domain := range domains {
+				if domain.LinkToBackupsExist() {
+					log.Printf("[domain: %s] has link to backups, removing", domain.Name)
+					domain.DeleteLinkToBackups(group.Mountpoint())
+				}
+				domain.DeletePathIfTemporary()
+			}
+		}
 	}
 }
