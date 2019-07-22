@@ -92,7 +92,7 @@ add_domain() {
     content=$(cat <<CONTENT
 path: $path
 symlink: $symlink
-exclusions: node_modules vendor
+exclusions: **/node_modules **/.DS_Store
 CONTENT
 )
     echo "$content" > "$DFB_PATH/$group/domains/$domain"
