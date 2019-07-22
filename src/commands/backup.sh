@@ -40,16 +40,16 @@ backup_domain() {
 
 backup() {
     verify_env
-    if [[ $2 == "help" ]]; then
+    if [[ $2 == "help" ]] || [[ $2 == "" ]]; then
         echo "Usage:"
         echo "  $PROGRAM backup [group] [repo] [<timestamp-file>]"
         exit
     fi
     group=$2
-    repo_name=$3
-    repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
     validate_group $group
+    repo_name=$3
     validate_repo $group $repo_name
+    repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
     domains_directory="$DFB_PATH/$group/domains"
 
     promt_for_password

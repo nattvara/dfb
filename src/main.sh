@@ -29,6 +29,12 @@ main() {
     elif [ "${1:-}" == "backup" ]
     then
         backup "$@"
+    elif [ "${1:-}" == "recover" ]
+    then
+        recover "$@"
+    elif [ "${1:-}" == "fsd" ]
+    then
+        fsd "$@"
     else
         print_main_help
     fi
@@ -56,6 +62,8 @@ Available Commands:
   groups      Group commands.
   domain      Domain commands.
   backup      Backup a group of domains to a repo.
+  recover     Mount backed up versions of domains for recovery.
+  fsd         Control the filesystem agent.
 
 Options:
   -h --help     Show this screen.
