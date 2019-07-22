@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 
-OUT="./build/dfb"
+BUILD_DIR="$(pwd)/build"
+OUT="$BUILD_DIR/dfb"
+
+if [ ! -d $BUILD_DIR ]; then
+    mkdir $BUILD_DIR
+fi
 
 if [ -f $OUT ]; then
     rm $OUT
 fi
 
+touch $OUT
 echo "#!/usr/bin/env bash" > $OUT
 cat src/main.sh >> $OUT && printf "\n" >> $OUT
 cat src/commands/groups.sh >> $OUT && printf "\n" >> $OUT
