@@ -127,3 +127,9 @@ Options:
   -h --help     Show this screen.
   -v --version  Print version information.
 ```
+
+## License
+
+MIT © Ludwig Kristoffersson
+
+See [LICENSE file](LICENSE) for more information.
