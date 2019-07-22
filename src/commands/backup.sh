@@ -43,7 +43,7 @@ backup_domain() {
         return
     fi
     echo "$exclusions" > /tmp/dfb_exclusions
-    echo -n "$password" | restic -r $repo_path backup "$restic_backup_path" --tag "$domain"  --exclude-file /tmp/dfb_exclusions --json | dfb-progress-parser "  backing up $domain"
+    echo -n "$password" | restic -r $repo_path backup "$restic_backup_path" --tag "$domain"  --exclude-file /tmp/dfb_exclusions --verbose --json | dfb-progress-parser "$group" "$domain"
     printf "\r"
 }
 
