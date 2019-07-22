@@ -93,6 +93,7 @@ add_domain() {
 path: $path
 symlink: $symlink
 exclusions: **/node_modules **/.DS_Store
+repos: *
 CONTENT
 )
     echo "$content" > "$DFB_PATH/$group/domains/$domain"

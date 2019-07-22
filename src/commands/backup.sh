@@ -5,12 +5,10 @@
 # domains.
 
 backup_domain() {
-    password="$1"
-    repo_path="$2"
-    domain="$3"
     domain_path=$(cat "./$domain" | ggrep -E 'path' | egrep -o '[^:]+$' | tr -d '[:space:]')
     symlink=$(cat "./$domain" | ggrep -E 'symlink' | egrep -o '[^:]+$' | tr -d '[:space:]')
     exclusions=$(cat "./$domain" | ggrep -E 'exclusions' | egrep -o '[^:]+$' | tr " " "\n")
+    repos=$(cat "./$domain" | ggrep -E 'repos' | egrep -o '[^:]+$' | tr -d '[:space:]')
 
     if [[ $symlink != "" ]]; then
         if [ ! -d $symlink ]; then
@@ -40,6 +38,10 @@ backup_domain() {
         restic_backup_path="."
     fi
 
+    if [[ $repos != "*" ]] && [[ ",$repos," != *",$repo_name,"* ]]; then
+        print_not_this_repo $domain $repo_name
+        return
+    fi
     echo "$exclusions" > /tmp/dfb_exclusions
     echo -n "$password" | restic -r $repo_path backup "$restic_backup_path" --tag "$domain"  --exclude-file /tmp/dfb_exclusions --json | dfb-progress-parser "  backing up $domain"
     printf "\r"
@@ -49,6 +51,13 @@ print_domain_unavailible() {
     echo -ne "\033[50D\033[0C backing up $domain"
     tput setaf 8;
     echo -e "\033[50D\033[50C unavailible"
+    tput sgr0;
+}
+
+print_not_this_repo() {
+    echo -ne "\033[50D\033[0C backing up $domain"
+    tput setaf 8;
+    echo -e "\033[50D\033[50C not backed up to $repo_name"
     tput sgr0;
 }
 
@@ -73,7 +82,7 @@ backup() {
     find . -type f -print0 |
     while IFS= read -r -d '' domain; do
         domain=$(echo $domain | sed -e 's/^\.\///g')
-        backup_domain $password $repo_path $domain
+        backup_domain $password $repo_name $repo_path $domain
         cd $domains_directory
     done
 
