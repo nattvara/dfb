@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -89,12 +90,9 @@ func (domain *Domain) CreatePathIfNotCreated() {
 	}
 }
 
-// DeletePathIfTemporary will delete the domains writable path if it's temporary
-func (domain *Domain) DeletePathIfTemporary() {
-	if paths.Exists(domain.TemporaryFlag()) {
-		log.Printf("[domain: %s] removing temporary path", domain.Name)
-		os.RemoveAll(domain.writablePath())
-	}
+// DeletePath will delete the domains writable path
+func (domain *Domain) DeletePath() {
+	os.RemoveAll(domain.writablePath())
 }
 
 func (domain *Domain) writablePath() string {
@@ -107,6 +105,11 @@ func (domain *Domain) writablePath() string {
 // PathExists checks if the domains path exists
 func (domain *Domain) PathExists() bool {
 	return paths.Exists(domain.Path)
+}
+
+// WritablePathExists checks if the domains writable path exists
+func (domain *Domain) WritablePathExists() bool {
+	return paths.Exists(domain.writablePath())
 }
 
 // CreatePath creates the domains path
@@ -125,6 +128,15 @@ func (domain *Domain) CreateTemporaryFlag() {
 	}
 }
 
+// DeleteTemporaryFlag will delete the the temporary flag in the domain
+func (domain *Domain) DeleteTemporaryFlag() {
+	err := os.Remove(domain.TemporaryFlag())
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// TemporaryFlag returns the path to the flag that indicates that a directory is temporary
 func (domain *Domain) TemporaryFlag() string {
 	return fmt.Sprintf("%s/.dfb-temporary", domain.writablePath())
 }
@@ -147,6 +159,31 @@ func (domain *Domain) IsSymlinkedDomain() bool {
 		return false
 	}
 	return true
+}
+
+// IsTemporary checks whether domain is temporary
+func (domain *Domain) IsTemporary() bool {
+	return paths.Exists(domain.TemporaryFlag())
+}
+
+// IsEmpty checks if domain is empty of any files or directories
+func (domain *Domain) IsEmpty() bool {
+	files, err := filepath.Glob(domain.writablePath() + "/*")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var count int
+	for _, file := range files {
+		basename := filepath.Base(file)
+		if basename == ".DS_Store" {
+			continue
+		}
+		if file == domain.TemporaryFlag() {
+			continue
+		}
+		count++
+	}
+	return count == 0
 }
 
 // LinkToBackupsExist checks whether symlinks to the domains backups exist

@@ -48,7 +48,16 @@ func main() {
 					log.Printf("[domain: %s] has link to backups, removing", domain.Name)
 					domain.DeleteLinkToBackups(group.Mountpoint())
 				}
-				domain.DeletePathIfTemporary()
+				if !domain.WritablePathExists() {
+					continue
+				}
+				if domain.IsEmpty() && domain.IsTemporary() {
+					log.Printf("[domain: %s] removing temporary path", domain.Name)
+					domain.DeletePath()
+				} else if domain.IsTemporary() {
+					log.Printf("[domain: %s] removing temporary flag", domain.Name)
+					domain.DeleteTemporaryFlag()
+				}
 			}
 		}
 	}
