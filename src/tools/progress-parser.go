@@ -4,51 +4,13 @@ import (
 	"bufio"
 	d "dfb/src/internal/domains"
 	"dfb/src/internal/paths"
+	"dfb/src/internal/restic"
 	"encoding/json"
 	"fmt"
-	"math"
 	"os"
 
 	tm "github.com/buger/goterm"
 )
-
-// Message should match any restic message
-type Message struct {
-	Type string `json:"message_type"`
-}
-
-// StatusMessage should match status messages from restic
-// which are emitted during backup
-type StatusMessage struct {
-	PercentDone      float64  `json:"percent_done"`
-	SecondsElapsed   int      `json:"seconds_elapsed"`
-	SecondsRemaining int      `json:"seconds_remaining"`
-	CurrentFiles     []string `json:"current_files"`
-}
-
-// GetProcenString returns a string with ProcentDone formatted like X%
-func (msg *StatusMessage) GetProcenString() string {
-	return fmt.Sprintf("%v%%", math.Round(msg.PercentDone*100))
-}
-
-// SummaryMessage should match summary messages from restic which
-// are emitted once a backup command is completed
-type SummaryMessage struct {
-	FilesNew       int     `json:"files_new"`
-	FilesChanged   int     `json:"files_changed"`
-	FilesProcessed int     `json:"total_files_processed"`
-	DirsNew        int     `json:"dirs_new"`
-	DirsChanged    int     `json:"dirs_changed"`
-	BytesProcessed int     `json:"total_bytes_processed"`
-	DataAdded      int     `json:"data_added"`
-	TotalDuration  float64 `json:"total_duration"`
-	SnapshotID     string  `json:"snapshot_id"`
-}
-
-// GetDurationString returns a string with TotalDuration formatted like x.xs
-func (msg *SummaryMessage) GetDurationString() string {
-	return fmt.Sprintf("%vs", math.Round(msg.TotalDuration*10)/10)
-}
 
 func main() {
 	if len(os.Args) != 3 {
@@ -73,17 +35,17 @@ func main() {
 	for scanner.Scan() {
 		ClearPreviousLines(linesPrinted)
 
-		var msg Message
+		var msg restic.Message
 		json.Unmarshal(scanner.Bytes(), &msg)
 
 		switch msg.Type {
 		case "":
 		case "status":
-			var status StatusMessage
+			var status restic.StatusMessage
 			json.Unmarshal(scanner.Bytes(), &status)
 			linesPrinted = PrintStatusMessage(status, domain)
 		case "summary":
-			var summary SummaryMessage
+			var summary restic.SummaryMessage
 			json.Unmarshal(scanner.Bytes(), &summary)
 
 			linesPrinted = PrintSummaryMessage(summary, domain)
@@ -101,7 +63,7 @@ func ClearPreviousLines(number int) {
 }
 
 // PrintStatusMessage prints a status message with procent done, ETA and which files are currently being backed up
-func PrintStatusMessage(msg StatusMessage, domain d.Domain) int {
+func PrintStatusMessage(msg restic.StatusMessage, domain d.Domain) int {
 	var linesPrinted int
 
 	message := fmt.Sprintf("  backing up %s", domain.Name)
@@ -130,7 +92,7 @@ func PrintStatusMessage(msg StatusMessage, domain d.Domain) int {
 }
 
 // PrintSummaryMessage prints a summary message with time taken to perform backup of domain
-func PrintSummaryMessage(msg SummaryMessage, domain d.Domain) int {
+func PrintSummaryMessage(msg restic.SummaryMessage, domain d.Domain) int {
 	var linesPrinted int
 
 	message := fmt.Sprintf("  backing up %s", domain.Name)
