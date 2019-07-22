@@ -76,7 +76,7 @@ func (group *Group) Domains() []d.Domain {
 
 	var domains []d.Domain
 	for _, file := range files {
-		domain := d.Load(file.Name(), group.Path)
+		domain := d.Load(file.Name(), group.Name, group.Path)
 		domains = append(domains, domain)
 	}
 

@@ -6,18 +6,20 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	"dfb/src/internal/paths"
 )
 
 // Domain is a directory a directory to backup
 type Domain struct {
-	Name          string // Name of domain
-	Path          string // Path to domain eg. ~/domain ~/domain.somefile
-	TemporaryPath string // If Path does not exist a temporary path will be created, this might differ from Path
-	ConfigPath    string // Path to domain config ~/.dfb/[group]/domains/domain
-	config        string // Config content
-	Symlink       string // Path to real domain src if it's a symlinked domain
+	Name          string   // Name of domain
+	groupName     string   // Name of group domain belongs to
+	Path          string   // Path to domain eg. ~/domain ~/domain.somefile
+	TemporaryPath string   // If Path does not exist a temporary path will be created, this might differ from Path
+	ConfigPath    string   // Path to domain config ~/.dfb/[group]/domains/domain
+	config        string   // Config content
+	Symlink       *Symlink // Path to real domain src if it's a symlinked domain
 }
 
 // ParseConfig will parse the config stored at the domains Path
@@ -45,13 +47,24 @@ func (domain *Domain) parseSymlinkFromConfig() {
 		return
 	}
 
-	domain.Symlink = re.FindStringSubmatch(domain.config)[1]
+	path := re.FindStringSubmatch(domain.config)[1]
+	path = strings.TrimSpace(path)
+	if len(path) == 0 {
+		return
+	}
+
+	domain.Symlink = &Symlink{
+		Source: path,
+		Proxy:  fmt.Sprintf("%s/%s/symlinks/%s", paths.DFB(), domain.groupName, domain.Name),
+		domain: domain,
+	}
 }
 
 // Load domain will create domain type and load its config
-func Load(name string, groupPath string) Domain {
+func Load(name string, groupName string, groupPath string) Domain {
 	domain := Domain{
 		Name:       name,
+		groupName:  groupName,
 		ConfigPath: fmt.Sprintf("%s/domains/%s", groupPath, name),
 	}
 
@@ -78,7 +91,7 @@ func (domain *Domain) CreatePathIfNotCreated() {
 
 // DeletePathIfTemporary will delete the domains writable path if it's temporary
 func (domain *Domain) DeletePathIfTemporary() {
-	if paths.Exists(domain.temporaryFlag()) {
+	if paths.Exists(domain.TemporaryFlag()) {
 		log.Printf("[domain: %s] removing temporary path", domain.Name)
 		os.RemoveAll(domain.writablePath())
 	}
@@ -106,13 +119,13 @@ func (domain *Domain) CreatePath() {
 
 // CreateTemporaryFlag writes a file to the domains path to flag it as temporary
 func (domain *Domain) CreateTemporaryFlag() {
-	err := ioutil.WriteFile(domain.temporaryFlag(), []byte{}, 0644)
+	err := ioutil.WriteFile(domain.TemporaryFlag(), []byte{}, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (domain *Domain) temporaryFlag() string {
+func (domain *Domain) TemporaryFlag() string {
 	return fmt.Sprintf("%s/.dfb-temporary", domain.writablePath())
 }
 
@@ -124,6 +137,16 @@ func (domain *Domain) IsSingleFileDomain() bool {
 		return false
 	}
 	return !paths.IsDir(domain.Path)
+}
+
+// IsSymlinkedDomain check if the domain is a symlinked domain
+// meaning that its content does not exist at path but at some
+// other location
+func (domain *Domain) IsSymlinkedDomain() bool {
+	if domain.Symlink == nil {
+		return false
+	}
+	return true
 }
 
 // LinkToBackupsExist checks whether symlinks to the domains backups exist
@@ -150,4 +173,41 @@ func (domain *Domain) backupLinkTargetPath() string {
 
 func (domain *Domain) backupLinkSourcePath(mountpoint string) string {
 	return fmt.Sprintf("%s/tags/%s", mountpoint, domain.Name)
+}
+
+// Symlink is a symbolik link to domains real content, not all domains
+// have symbolik links to their content
+type Symlink struct {
+	Source string  // The source of the domains symlink
+	Proxy  string  // Domains with symlinks have a symlink in ~/.dfb/[group]/symlinks/[domain] to Source that is never deleted or repointed
+	domain *Domain // Domain symlink belongs to
+}
+
+// Availible checks if the symlinks source content is availible
+func (symlink *Symlink) Availible() bool {
+	return paths.Exists(symlink.Source)
+}
+
+// LinkDomainToProxyIfNotLinked will link domain Path to symlink proxy
+// if domain path does not exist and is not temporary
+func (symlink *Symlink) LinkDomainToProxyIfNotLinked() {
+	if !symlink.domain.PathExists() {
+		log.Printf("[domain: %s] domain path did not exist, linking to source", symlink.domain.Name)
+		os.Symlink(symlink.Proxy, symlink.domain.Path)
+		return
+	}
+	if paths.Exists(symlink.domain.TemporaryFlag()) {
+		log.Printf("[domain: %s] domain path was temporary, linking to source", symlink.domain.Name)
+		os.RemoveAll(symlink.domain.Path)
+		os.Symlink(symlink.Proxy, symlink.domain.Path)
+	}
+}
+
+// UnlinkDomainFromProxyIfLinked will unlink domain from proxy will unlink
+// domain from its proxy if linked
+func (symlink *Symlink) UnlinkDomainFromProxyIfLinked() {
+	if paths.IsSymlink(symlink.domain.Path) {
+		log.Printf("[domain: %s] symlink source went away, removing symlink", symlink.domain.Name)
+		os.Remove(symlink.domain.Path)
+	}
 }

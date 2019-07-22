@@ -23,6 +23,16 @@ func main() {
 	for _, group := range groups {
 
 		domains := group.Domains()
+		for _, domain := range domains {
+			if !domain.IsSymlinkedDomain() {
+				continue
+			}
+			if domain.Symlink.Availible() {
+				domain.Symlink.LinkDomainToProxyIfNotLinked()
+			} else {
+				domain.Symlink.UnlinkDomainFromProxyIfLinked()
+			}
+		}
 
 		if group.IsMounted() {
 			for _, domain := range domains {
