@@ -10,6 +10,13 @@ fi
 cp build/dfb /usr/local/bin/dfb
 cp build/dfb-progress-parser /usr/local/bin/dfb-progress-parser
 cp build/dfb-fsd /usr/local/bin/dfb-fsd
-cp resources/dfb-fsd.plist $launch_agent
+
+if [ ! -d "$HOME/.dfb.logs" ]; then
+    echo "creating logs directory at $HOME/.dfb.logs"
+    mkdir "$HOME/.dfb.logs"
+fi
+
+home=$(echo $HOME | sed 's_/_\\/_g')
+sed -e "s/~/$home/g" resources/dfb-fsd.plist > $launch_agent
 
 launchctl load $launch_agent

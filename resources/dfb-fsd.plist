@@ -6,6 +6,10 @@
 		<string>com.dfb.fsd</string>
 		<key>Program</key>
 		<string>/usr/local/bin/dfb-fsd</string>
+		<key>StandardOutPath</key>
+		<string>~/.dfb.logs/dfb-fsd.log</string>
+		<key>StandardErrorPath</key>
+		<string>~/.dfb.logs/dfb-fsd.error.log</string>
 		<key>RunAtLoad</key>
 		<true/>
 	</dict>
