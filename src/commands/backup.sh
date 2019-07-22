@@ -13,18 +13,23 @@ backup_domain() {
 
     if [[ $symlink != "" ]]; then
         if [ ! -d $symlink ]; then
-            echo -ne "\033[50D\033[0C backing up $domain"
-            tput setaf 8;
-            echo -e "\033[50D\033[50C unavailible"
-            tput sgr0;
+            print_domain_unavailible $domain
             return
         fi
 
         cd $symlink
     elif [ -f $domain_path ]; then
         parent_dir=$(dirname $domain_path)
+        if [ ! -d $parent_dir ]; then
+            print_domain_unavailible $domain
+            return
+        fi
         cd $parent_dir
     else
+        if [ ! -d $domain_path ]; then
+            print_domain_unavailible $domain
+            return
+        fi
         cd $domain_path
     fi
 
@@ -36,6 +41,13 @@ backup_domain() {
 
     echo -n "$password" | restic -r $repo_path backup "$restic_backup_path" --tag "$domain" --json | dfb-progress-parser "  backing up $domain"
     printf "\r"
+}
+
+print_domain_unavailible() {
+    echo -ne "\033[50D\033[0C backing up $domain"
+    tput setaf 8;
+    echo -e "\033[50D\033[50C unavailible"
+    tput sgr0;
 }
 
 backup() {
