@@ -2,105 +2,104 @@ package main
 
 import (
 	"bufio"
+	d "dfb/src/internal/domains"
+	"dfb/src/internal/paths"
+	"dfb/src/internal/restic"
 	"encoding/json"
 	"fmt"
-	"math"
 	"os"
 
 	tm "github.com/buger/goterm"
 )
 
-// Message should match any restic message
-type Message struct {
-	Type string `json:"message_type"`
-}
-
-// StatusMessage should match status messages from restic
-// which are emitted during backup
-type StatusMessage struct {
-	PercentDone float64 `json:"percent_done"`
-}
-
-// GetProcenString returns a string with ProcentDone formatted like X%
-func (msg *StatusMessage) GetProcenString() string {
-	return fmt.Sprintf("%v%%", math.Round(msg.PercentDone*100))
-}
-
-// SummaryMessage should match summary messages from restic which
-// are emitted once a backup command is completed
-type SummaryMessage struct {
-	FilesNew      int     `json:"files_new"`
-	FilesChanged  int     `json:"files_changed"`
-	DirsNew       int     `json:"dirs_new"`
-	DirsChanged   int     `json:"dirs_changed"`
-	DataAadded    int     `json:"data_added"`
-	TotalDuration float64 `json:"total_duration"`
-}
-
-// GetDurationString returns a string with TotalDuration formatted like x.xs
-func (msg *SummaryMessage) GetDurationString() string {
-	return fmt.Sprintf("%vs", math.Round(msg.TotalDuration*10)/10)
-}
-
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("usage: dfb-progress-parser [output-prefix]")
+	if len(os.Args) != 3 {
+		fmt.Println("usage: dfb-progress-parser [group] [domain]")
 		os.Exit(1)
 	}
 
+	groupName := os.Args[1]
+	domainName := os.Args[2]
+
+	domain := d.Load(
+		domainName,
+		groupName,
+		fmt.Sprintf("%s/%s", paths.DFB(), groupName),
+	)
+
+	tm.Flush()
+	var linesPrinted int
+
 	scanner := bufio.NewScanner(os.Stdin)
-	prefix := os.Args[1]
 
 	for scanner.Scan() {
-		var msg Message
+		ClearPreviousLines(linesPrinted)
+
+		var msg restic.Message
 		json.Unmarshal(scanner.Bytes(), &msg)
 
 		switch msg.Type {
 		case "":
 		case "status":
-			var status StatusMessage
+			var status restic.StatusMessage
 			json.Unmarshal(scanner.Bytes(), &status)
-
-			printStatusMessage(&status, prefix)
-
+			linesPrinted = PrintStatusMessage(status, domain)
 		case "summary":
-			var summary SummaryMessage
+			var summary restic.SummaryMessage
 			json.Unmarshal(scanner.Bytes(), &summary)
 
-			printSummaryMessage(&summary, prefix)
-		default:
-			printUnknownMessage(&msg)
+			linesPrinted = PrintSummaryMessage(summary, domain)
 		}
 	}
 }
 
-func printStatusMessage(msg *StatusMessage, prefix string) {
-	clearLine()
-	fmt.Printf("%s \033[50D\033[50C %s", prefix, msg.GetProcenString())
+// ClearPreviousLines takes the number of lines last printed, clears them at sets
+func ClearPreviousLines(number int) {
+	for i := 1; i <= number; i++ {
+		tm.Print(tm.RESET_LINE)
+		tm.MoveCursorUp(1)
+	}
+	tm.Flush()
 }
 
-func printSummaryMessage(msg *SummaryMessage, prefix string) {
-	clearLine()
-	fmt.Printf("%s \033[50D\033[50C 100%% ⏱  %v \n", prefix, msg.GetDurationString())
-	moveCursorDownOneLine()
-	clearLine()
-}
+// PrintStatusMessage prints a status message with procent done, ETA and which files are currently being backed up
+func PrintStatusMessage(msg restic.StatusMessage, domain d.Domain) int {
+	var linesPrinted int
 
-func printUnknownMessage(msg *Message) {
-	fmt.Printf("unkown message type %s\n", msg.Type)
-}
+	message := fmt.Sprintf("  backing up %s", domain.Name)
+	tm.Printf(message)
 
-func clearLine() {
-	fmt.Print("\r \r \033[50D\033[0C")
-
-	width := tm.Width()
-	for i := 1; i <= width; i++ {
-		fmt.Print("")
+	tm.MoveCursorForward(50 - len(message))
+	tm.Print(msg.GetProcentString())
+	if msg.SecondsRemaining != 0 {
+		tm.Printf("  ETA %vs", msg.SecondsRemaining)
 	}
 
-	fmt.Print("\033[50D\033[0C \r \r")
+	tm.Printf("\n")
+	linesPrinted++
+
+	if len(msg.CurrentFiles) == 1 {
+		tm.Println(msg.CurrentFiles[0])
+		linesPrinted++
+	} else if len(msg.CurrentFiles) == 2 {
+		tm.Printf("  current files %s\n", msg.CurrentFiles[0])
+		tm.Printf("  current files %s\n", msg.CurrentFiles[1])
+		linesPrinted += 2
+	}
+
+	tm.Flush()
+	return linesPrinted
 }
 
-func moveCursorDownOneLine() {
-	fmt.Print("\033[1B\033[0C")
+// PrintSummaryMessage prints a summary message with time taken to perform backup of domain
+func PrintSummaryMessage(msg restic.SummaryMessage, domain d.Domain) int {
+	var linesPrinted int
+
+	message := fmt.Sprintf("  backing up %s", domain.Name)
+	tm.Printf(message)
+	tm.MoveCursorForward(50 - len(message))
+	tm.Printf("100%% ⏱  %s 💾 %s \n", msg.GetDurationString(), msg.GetDataAddedString())
+
+	tm.Flush()
+	return linesPrinted
 }
