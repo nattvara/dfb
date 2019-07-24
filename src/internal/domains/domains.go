@@ -15,7 +15,7 @@ import (
 // Domain is a directory a directory to backup
 type Domain struct {
 	Name          string   // Name of domain
-	groupName     string   // Name of group domain belongs to
+	GroupName     string   // Name of group domain belongs to
 	Path          string   // Path to domain eg. ~/domain ~/domain.somefile
 	TemporaryPath string   // If Path does not exist a temporary path will be created, this might differ from Path
 	ConfigPath    string   // Path to domain config ~/.dfb/[group]/domains/domain
@@ -56,7 +56,7 @@ func (domain *Domain) parseSymlinkFromConfig() {
 
 	domain.Symlink = &Symlink{
 		Source: path,
-		Proxy:  fmt.Sprintf("%s/%s/symlinks/%s", paths.DFB(), domain.groupName, domain.Name),
+		Proxy:  fmt.Sprintf("%s/%s/symlinks/%s", paths.DFB(), domain.GroupName, domain.Name),
 		domain: domain,
 	}
 }
@@ -65,7 +65,7 @@ func (domain *Domain) parseSymlinkFromConfig() {
 func Load(name string, groupName string, groupPath string) Domain {
 	domain := Domain{
 		Name:       name,
-		groupName:  groupName,
+		GroupName:  groupName,
 		ConfigPath: fmt.Sprintf("%s/domains/%s", groupPath, name),
 	}
 
