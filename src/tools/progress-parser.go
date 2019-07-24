@@ -98,7 +98,7 @@ func PrintSummaryMessage(msg restic.SummaryMessage, domain d.Domain) int {
 	message := fmt.Sprintf("  backing up %s", domain.Name)
 	tm.Printf(message)
 	tm.MoveCursorForward(50 - len(message))
-	tm.Printf("100%% ⏱  %s \n", msg.GetDurationString())
+	tm.Printf("100%% ⏱  %s 💾 %s \n", msg.GetDurationString(), msg.GetDataAddedString())
 
 	tm.Flush()
 	return linesPrinted

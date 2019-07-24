@@ -33,7 +33,7 @@ func (msg *StatusMessage) GetProcent() float64 {
 
 // GetETAString will return a string with time taken and current ETA
 func (msg *StatusMessage) GetETAString() string {
-	return fmt.Sprintf("%vs ETA: %vs", msg.SecondsElapsed, msg.SecondsRemaining)
+	return fmt.Sprintf("time: %vs, ETA: %vs", msg.SecondsElapsed, msg.SecondsRemaining)
 }
 
 // StatusMessageFromString will create a StatusMessage from given string
@@ -60,6 +60,27 @@ type SummaryMessage struct {
 // GetDurationString returns a string with TotalDuration formatted like x.xs
 func (msg *SummaryMessage) GetDurationString() string {
 	return fmt.Sprintf("%vs", math.Round(msg.TotalDuration*10)/10)
+}
+
+// GetDataAddedString returns a nicely formatted string of the amount added,
+// eg. 289.0 MiB 3.1 GiB
+// source: https://yourbasic.org/golang/formatting-byte-size-to-human-readable-format/
+func (msg *SummaryMessage) GetDataAddedString() string {
+	bytes := msg.DataAdded
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	div, exp := int64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf(
+		"%.1f %ciB",
+		float64(bytes)/float64(div),
+		"KMGTPE"[exp],
+	)
 }
 
 // SummaryMessageFromString will create a SummaryMessage from given string

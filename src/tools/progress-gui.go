@@ -164,7 +164,11 @@ func (gui *ProgressGUI) handleStatusMessage(msg restic.StatusMessage) {
 }
 
 func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
-	gui.currentDomain.ETA.SetText("took " + msg.GetDurationString())
+	gui.currentDomain.ETA.SetText(fmt.Sprintf(
+		"took %s, added: %s",
+		msg.GetDurationString(),
+		msg.GetDataAddedString(),
+	))
 	gui.currentDomain.ProgressBar.SetValue(100)
 	gui.currentDomain.CurrentFiles[0].Text = ""
 	gui.currentDomain.CurrentFiles[1].Text = ""
