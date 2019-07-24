@@ -21,8 +21,8 @@ type StatusMessage struct {
 	CurrentFiles     []string `json:"current_files"`
 }
 
-// GetProcenString returns a string with ProcentDone formatted like X%
-func (msg *StatusMessage) GetProcenString() string {
+// GetProcentString returns a string with ProcentDone formatted like X%
+func (msg *StatusMessage) GetProcentString() string {
 	return fmt.Sprintf("%v%%", math.Round(msg.PercentDone*100))
 }
 
