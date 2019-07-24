@@ -18,10 +18,12 @@ import (
 	"dfb/src/internal/restic"
 	"encoding/json"
 	"fmt"
+	"image/color"
 	"os"
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
+	"fyne.io/fyne/canvas"
 	"fyne.io/fyne/layout"
 	"fyne.io/fyne/widget"
 )
@@ -68,25 +70,26 @@ type ProgressGUI struct {
 // DomainProgress contains a domain and the widgets to display the backup progress
 // of that domain
 type DomainProgress struct {
-	Domain      d.Domain
-	NameWidget  *widget.Label
-	ETA         *widget.Label
-	ProgressBar *widget.ProgressBar
+	Domain d.Domain
+
+	NameWidget   *widget.Label
+	ETA          *widget.Label
+	ProgressBar  *widget.ProgressBar
+	CurrentFiles []*canvas.Text
 }
 
 // LoadUI will load the initial UI for gui
 func (gui *ProgressGUI) LoadUI(app fyne.App) {
 	gui.window = app.NewWindow("dfb Progress Report")
 
+	gui.window.SetContent(widget.NewLabel("waiting for messages on stdin"))
 	gui.window.Show()
-	gui.window.Resize(fyne.NewSize(800, 200))
-	gui.window.SetPadded(true)
 }
 
 func (gui *ProgressGUI) updateLayout() {
-	container := fyne.NewContainerWithLayout(layout.NewGridLayout(1))
+	domains := fyne.NewContainerWithLayout(layout.NewGridLayout(1))
 	for _, domain := range gui.domains {
-		container.AddObject(
+		domains.AddObject(
 			fyne.NewContainerWithLayout(
 				layout.NewGridLayout(3),
 				domain.NameWidget,
@@ -95,9 +98,34 @@ func (gui *ProgressGUI) updateLayout() {
 			),
 		)
 	}
-	gui.window.SetContent(
-		widget.NewScrollContainer(container),
+
+	scroll := fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(700, 400)))
+	scroll.AddObject(widget.NewScrollContainer(domains))
+
+	currentFiles := fyne.NewContainerWithLayout(layout.NewVBoxLayout())
+	for _, file := range gui.currentDomain.CurrentFiles {
+		file.Resize(fyne.NewSize(700, 10))
+		currentFiles.AddObject(fyne.NewContainer(
+			file,
+		))
+	}
+
+	bottom := fyne.NewContainerWithLayout(
+		layout.NewFixedGridLayout(fyne.NewSize(700, 40)),
+		widget.NewButton("Close", func() {
+			gui.app.Quit()
+		}),
 	)
+
+	content := fyne.NewContainerWithLayout(
+		layout.NewVBoxLayout(),
+		scroll,
+		currentFiles,
+		bottom,
+	)
+	content.Resize(fyne.NewSize(700, 475))
+	gui.window.SetContent(content)
+
 	for _, domain := range gui.domains {
 		domain.NameWidget.Show()
 		domain.ETA.Show()
@@ -126,11 +154,20 @@ func (gui *ProgressGUI) ListenForMessages(channel chan restic.Message) {
 func (gui *ProgressGUI) handleStatusMessage(msg restic.StatusMessage) {
 	gui.currentDomain.ETA.SetText(msg.GetETAString())
 	gui.currentDomain.ProgressBar.SetValue(msg.GetProcent())
+
+	if len(msg.CurrentFiles) == 1 {
+		gui.currentDomain.CurrentFiles[0].Text = msg.CurrentFiles[0]
+	} else if len(msg.CurrentFiles) == 2 {
+		gui.currentDomain.CurrentFiles[0].Text = msg.CurrentFiles[0]
+		gui.currentDomain.CurrentFiles[1].Text = msg.CurrentFiles[1]
+	}
 }
 
 func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
 	gui.currentDomain.ETA.SetText("took " + msg.GetDurationString())
 	gui.currentDomain.ProgressBar.SetValue(100)
+	gui.currentDomain.CurrentFiles[0].Text = ""
+	gui.currentDomain.CurrentFiles[1].Text = ""
 }
 
 func (gui *ProgressGUI) handleDFBMessage(msg restic.DFBMessage) {
@@ -156,11 +193,19 @@ func (gui *ProgressGUI) StartNewDomain(groupName string, domainName string) {
 		groupName,
 		fmt.Sprintf("%s/%s", paths.DFB(), groupName),
 	)
+	file1 := canvas.NewText("", color.Gray{})
+	file1.TextSize = 9
+	file2 := canvas.NewText("", color.Gray{})
+	file2.TextSize = 9
 	domainProgress := &DomainProgress{
 		Domain:      domain,
 		NameWidget:  widget.NewLabel(fmt.Sprintf("backing up %s", domain.Name)),
 		ETA:         widget.NewLabel("N/A"),
 		ProgressBar: widget.NewProgressBar(),
+		CurrentFiles: []*canvas.Text{
+			file1,
+			file2,
+		},
 	}
 	domainProgress.ProgressBar.Max = 100
 	gui.domains = append([]*DomainProgress{domainProgress}, gui.domains...)
