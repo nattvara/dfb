@@ -27,5 +27,5 @@ echo 'main "$@"' >> $OUT
 chmod +x $OUT
 
 go build -o ./build/dfb-progress-parser -i ./src/tools/progress-parser.go
-go build -o ./build/dfb-progress-gui -i ./src/tools/progress-gui.go
+go build -o ./build/dfb-progress-parser-gui -i ./src/tools/progress-parser-gui.go
 go build -o ./build/dfb-fsd -i ./src/agents/fsd.go

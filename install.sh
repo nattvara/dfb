@@ -9,7 +9,7 @@ fi
 
 cp build/dfb /usr/local/bin/dfb
 cp build/dfb-progress-parser /usr/local/bin/dfb-progress-parser
-cp build/dfb-progress-gui /usr/local/bin/dfb-progress-gui
+cp build/dfb-progress-gui /usr/local/bin/dfb-progress-parser-gui
 cp build/dfb-fsd /usr/local/bin/dfb-fsd
 
 if [ ! -d "$HOME/.dfb.logs" ]; then

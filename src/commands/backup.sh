@@ -60,7 +60,7 @@ print_domain_unavailable() {
     fi
     echo -ne "\033[50D\033[0C backing up $domain"
     tput setaf 8;
-    echo -e "\033[50D\033[50C unavailable"
+    echo -e "\033[50D\033[50Cunavailable"
     tput sgr0;
 }
 
@@ -71,7 +71,7 @@ print_not_this_repo() {
     fi
     echo -ne "\033[50D\033[0C backing up $domain"
     tput setaf 8;
-    echo -e "\033[50D\033[50C not backed up to $repo_name"
+    echo -e "\033[50D\033[50Cnot backed up to $repo_name"
     tput sgr0;
 }
 
@@ -112,7 +112,7 @@ backup() {
 
     if [ "$gui" = true ]; then
         touch /tmp/dfb-progress
-        tail -f /tmp/dfb-progress | dfb-progress-gui &
+        tail -f /tmp/dfb-progress | dfb-progress-parser-gui &
     fi
 
     cd $domains_directory
