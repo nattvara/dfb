@@ -68,3 +68,19 @@ func SummaryMessageFromString(data string) SummaryMessage {
 	json.Unmarshal([]byte(data), &summary)
 	return summary
 }
+
+// DFBMessage is not a message from restic, but a custom dfb message,
+// will be sent in roughly the same context as restic messages (meant to
+// be parsed the same)
+type DFBMessage struct {
+	Group  string `json:"group"`
+	Domain string `json:"domain"`
+	Action string `json:"action"`
+}
+
+// DFBMessageFromString will create a DFBMessage from given string
+func DFBMessageFromString(data string) DFBMessage {
+	var dfb DFBMessage
+	json.Unmarshal([]byte(data), &dfb)
+	return dfb
+}
