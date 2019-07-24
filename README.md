@@ -51,6 +51,7 @@ if [ ! -L "$GOPATH/src/dfb" ]; then ln -s "$(pwd)" "$GOPATH/src/dfb"; else echo 
 
 cd "$GOPATH/src/dfb"
 
+go get fyne.io/fyne
 dep ensure
 
 ./build.sh
