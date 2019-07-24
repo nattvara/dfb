@@ -1,6 +1,7 @@
 package restic
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 )
@@ -8,6 +9,7 @@ import (
 // Message should match any restic message
 type Message struct {
 	Type string `json:"message_type"`
+	Body string
 }
 
 // StatusMessage should match status messages from restic
@@ -22,6 +24,23 @@ type StatusMessage struct {
 // GetProcenString returns a string with ProcentDone formatted like X%
 func (msg *StatusMessage) GetProcenString() string {
 	return fmt.Sprintf("%v%%", math.Round(msg.PercentDone*100))
+}
+
+// GetProcent returns a nice rounded value of PercentDone
+func (msg *StatusMessage) GetProcent() float64 {
+	return math.Round(msg.PercentDone * 100)
+}
+
+// GetETAString will return a string with time taken and current ETA
+func (msg *StatusMessage) GetETAString() string {
+	return fmt.Sprintf("%vs ETA: %vs", msg.SecondsElapsed, msg.SecondsRemaining)
+}
+
+// StatusMessageFromString will create a StatusMessage from given string
+func StatusMessageFromString(data string) StatusMessage {
+	var status StatusMessage
+	json.Unmarshal([]byte(data), &status)
+	return status
 }
 
 // SummaryMessage should match summary messages from restic which
@@ -41,4 +60,11 @@ type SummaryMessage struct {
 // GetDurationString returns a string with TotalDuration formatted like x.xs
 func (msg *SummaryMessage) GetDurationString() string {
 	return fmt.Sprintf("%vs", math.Round(msg.TotalDuration*10)/10)
+}
+
+// SummaryMessageFromString will create a SummaryMessage from given string
+func SummaryMessageFromString(data string) SummaryMessage {
+	var summary SummaryMessage
+	json.Unmarshal([]byte(data), &summary)
+	return summary
 }
