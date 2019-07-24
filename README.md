@@ -4,7 +4,7 @@ A backup approach and tool built on top of [restic](https://github.com/restic/re
 
 ## About
 
-Domain based Filesystem Backup (dfb) is backup of files organized by domains. A domain is arbitrary, but should be as narrow as possible but not to narrow. A single project such as a source code repository, documents for a project, or something longerlived such as a .photoslibrary.
+Domain based Filesystem Backup (dfb) is backup of files organized by domains. A domain is arbitrary, but should be as narrow as possible but not to narrow. A single project such as a source code repository, documents for a project, or something longerlived such as a `.photoslibrary`.
 
 Domains also include special directories such as `~/Library` and files in home directory such as `~/.zshrc` and `~/.gitconfig`.
 
@@ -70,7 +70,7 @@ dfb --version
 
 ### Structuring the filesystem
 
-The purpose of dfb is the keep domains separate and allow for backup, recovery and deletion of backups easy and isolated. Hence the filesystem must be organized in such a way.
+The purpose of dfb is to keep domains separate and allow for backup, recovery and deletion of backups easy and isolated. Hence the filesystem must be organized in such a way.
 
 ```console
 ~
