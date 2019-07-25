@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"image/color"
 	"os"
+	"time"
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
@@ -80,7 +81,8 @@ type DomainProgress struct {
 
 // LoadUI will load the initial UI for gui
 func (gui *ProgressGUI) LoadUI(app fyne.App) {
-	gui.window = app.NewWindow("dfb Progress Report")
+	now := time.Now().Format("15:04")
+	gui.window = app.NewWindow("Progress report for dfb backup started at " + now)
 
 	gui.window.SetContent(widget.NewLabel("waiting for messages on stdin"))
 	gui.window.Show()
