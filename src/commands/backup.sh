@@ -4,6 +4,74 @@
 # The backup command will start a backup of one or more
 # domains.
 
+backup() {
+    verify_env
+
+    # options
+    gui=false
+
+    for var in "$@"; do
+        if [[ "$var" =~ ^-h|--help$  ]]; then
+            print_backup_help
+        elif [[ "$var" =~ ^--gui$  ]]; then
+            gui=true
+        fi
+    done
+
+    group=$2
+    validate_group $group
+    repo_name=$3
+    validate_repo $group $repo_name
+    repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
+    domains_directory="$DFB_PATH/$group/domains"
+    STATS_PATH="$DFB_PATH/$group/stats"
+
+    promt_for_password
+    verify_password $password $repo_path
+
+    if [ "$gui" = true ]; then
+        touch /tmp/dfb-progress
+        tail -f /tmp/dfb-progress | dfb-progress-parser-gui > /dev/stdout 2>&1 &
+    fi
+
+    cd $domains_directory
+    find . -type f -print0 |
+    while IFS= read -r -d '' domain; do
+        domain=$(echo $domain | sed -e 's/^\.\///g')
+        backup_domain $password $repo_name $repo_path $domain
+        cd $domains_directory
+    done
+
+    if [ "$gui" = true ]; then
+        ps aux | ggrep "[t]ail -f /tmp/dfb-progress" | awk '{print $2}' | xargs kill -9
+        rm /tmp/dfb-progress
+    fi
+
+    repo_raw_data_csv="$STATS_PATH/repo_raw_data.csv"
+
+    echo -n "$password" \
+    | restic -r "$repo_path" stats --mode raw-data --json \
+    | ggrep "{" \
+    | jq -r '[.[]] | @csv' \
+    | tr -d '\n' >> "$repo_raw_data_csv" \
+    && echo ",$group,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> "$repo_raw_data_csv"
+
+    printf "\n"
+}
+
+print_backup_help() {
+    cat <<HEREDOC
+Backup a group of domains.
+
+Usage:
+  ${PROGRAM} [group] [repo]
+
+Options:
+  --gui         Show progress in a graphical user interface.
+  -h --help     Show this screen.
+HEREDOC
+}
+
 backup_domain() {
     domain_path=$(cat "./$domain" | ggrep -E 'path' | egrep -o '[^:]+$' | tr -d '[:space:]')
     symlink=$(cat "./$domain" | ggrep -E 'symlink' | egrep -o '[^:]+$' | tr -d '[:space:]')
@@ -120,72 +188,4 @@ print_message_to_progress_file() {
 END
     )
     echo $json >> /tmp/dfb-progress
-}
-
-backup() {
-    verify_env
-
-    # options
-    gui=false
-
-    for var in "$@"; do
-        if [[ "$var" =~ ^-h|--help$  ]]; then
-            print_backup_help
-        elif [[ "$var" =~ ^--gui$  ]]; then
-            gui=true
-        fi
-    done
-
-    group=$2
-    validate_group $group
-    repo_name=$3
-    validate_repo $group $repo_name
-    repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
-    domains_directory="$DFB_PATH/$group/domains"
-    STATS_PATH="$DFB_PATH/$group/stats"
-
-    promt_for_password
-    verify_password $password $repo_path
-
-    if [ "$gui" = true ]; then
-        touch /tmp/dfb-progress
-        tail -f /tmp/dfb-progress | dfb-progress-parser-gui > /dev/stdout 2>&1 &
-    fi
-
-    cd $domains_directory
-    find . -type f -print0 |
-    while IFS= read -r -d '' domain; do
-        domain=$(echo $domain | sed -e 's/^\.\///g')
-        backup_domain $password $repo_name $repo_path $domain
-        cd $domains_directory
-    done
-
-    if [ "$gui" = true ]; then
-        ps aux | ggrep "[t]ail -f /tmp/dfb-progress" | awk '{print $2}' | xargs kill -9
-        rm /tmp/dfb-progress
-    fi
-
-    repo_raw_data_csv="$STATS_PATH/repo_raw_data.csv"
-
-    echo -n "$password" \
-    | restic -r "$repo_path" stats --mode raw-data --json \
-    | ggrep "{" \
-    | jq -r '[.[]] | @csv' \
-    | tr -d '\n' >> "$repo_raw_data_csv" \
-    && echo ",$group,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> "$repo_raw_data_csv"
-
-    printf "\n"
-}
-
-print_backup_help() {
-    cat <<HEREDOC
-Backup a group of domains.
-
-Usage:
-  ${PROGRAM} [group] [repo]
-
-Options:
-  --gui         Show progress in a graphical user interface.
-  -h --help     Show this screen.
-HEREDOC
 }
