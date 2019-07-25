@@ -47,7 +47,6 @@ func main() {
 		case "summary":
 			var summary restic.SummaryMessage
 			json.Unmarshal(scanner.Bytes(), &summary)
-
 			linesPrinted = PrintSummaryMessage(summary, domain)
 		}
 	}

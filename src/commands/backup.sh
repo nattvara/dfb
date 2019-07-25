@@ -43,14 +43,35 @@ backup_domain() {
         return
     fi
 
-    echo "$exclusions" > /tmp/dfb_exclusions
-    if [ "$gui" = true ]; then
-        print_message_to_progress_file "$group" "$domain" "begin"
-        echo -n "$password" | restic -r $repo_path backup "$restic_backup_path" --tag "$domain"  --exclude-file /tmp/dfb_exclusions --verbose --json >> /tmp/dfb-progress
-    else
-        echo -n "$password" | restic -r $repo_path backup "$restic_backup_path" --tag "$domain"  --exclude-file /tmp/dfb_exclusions --verbose --json | dfb-progress-parser "$group" "$domain"
-        printf "\r"
+    STATS_PATH="$DFB_PATH/$group/stats"
+    snapshots_csv="$STATS_PATH/snapshots.csv"
+    if [ ! -d "$STATS_PATH" ]; then
+        mkdir "$STATS_PATH"
     fi
+
+    echo "$exclusions" > /tmp/dfb_exclusions
+
+    echo -n "$password" \
+        | restic -r "$repo_path" \
+        backup "$restic_backup_path" \
+        --tag "$domain" \
+        --exclude-file /tmp/dfb_exclusions \
+        --verbose \
+        --json \
+        | tee >( \
+            ggrep "summary" \
+            | jq -r 'select(.message_type=="summary") | [.[]] | @csv' \
+            | tr -d '\n' >> "$snapshots_csv" \
+            && echo ",$group,$domain,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> "$snapshots_csv"
+        ) \
+        | if [ "$gui" = true ]; \
+            then \
+                print_message_to_progress_file "$group" "$domain" "begin"; \
+                tail >> /tmp/dfb-progress; \
+            else \
+                dfb-progress-parser "$group" "$domain"; \
+                printf "\r"; \
+        fi
 }
 
 print_domain_unavailable() {
@@ -112,7 +133,7 @@ backup() {
 
     if [ "$gui" = true ]; then
         touch /tmp/dfb-progress
-        tail -f /tmp/dfb-progress | dfb-progress-parser-gui &
+        tail -f /tmp/dfb-progress | dfb-progress-parser-gui > /dev/stdout 2>&1 &
     fi
 
     cd $domains_directory
@@ -124,6 +145,7 @@ backup() {
     done
 
     if [ "$gui" = true ]; then
+        ps aux | ggrep "[t]ail -f /tmp/dfb-progress" | awk '{print $2}' | xargs kill -9
         rm /tmp/dfb-progress
     fi
     printf "\n"
