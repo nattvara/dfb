@@ -6,6 +6,7 @@
 
 backup() {
     verify_env
+    backup_start=$(gdate +%s.%N)
 
     # options
     gui=false
@@ -49,6 +50,7 @@ backup() {
     fi
 
     repo_raw_data_csv="$STATS_PATH/repo_raw_data.csv"
+    repo_time_took_csv="$STATS_PATH/repo_time_took.csv"
 
     echo -n "$password" \
     | restic -r "$repo_path" stats --mode raw-data --json \
@@ -67,6 +69,10 @@ backup() {
         ps aux | ggrep "[t]ail -f /tmp/dfb-progress" | awk '{print $2}' | xargs kill -9
         rm /tmp/dfb-progress
     fi
+
+    backup_done=$(gdate +%s.%N)
+    backup_took=$(echo "$backup_done - $backup_start" | bc)
+    echo "$backup_took,$group,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> $repo_time_took_csv
 
     printf "\n"
 }
