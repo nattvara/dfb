@@ -57,7 +57,9 @@ func ClearPreviousLines(number int) {
 	for i := 1; i <= number; i++ {
 		tm.Print(tm.RESET_LINE)
 		tm.MoveCursorUp(1)
+		tm.Flush()
 	}
+	tm.Print(tm.RESET_LINE)
 	tm.Flush()
 }
 
@@ -97,7 +99,7 @@ func PrintSummaryMessage(msg restic.SummaryMessage, domain d.Domain) int {
 	message := fmt.Sprintf("  backing up %s", domain.Name)
 	tm.Printf(message)
 	tm.MoveCursorForward(50 - len(message))
-	tm.Printf("100%% ⏱  %s 💾 %s \n", msg.GetDurationString(), msg.GetDataAddedString())
+	tm.Printf("100%% ⏱  %s 💾 %s 📊 gathering stats... ", msg.GetDurationString(), msg.GetDataAddedString())
 
 	tm.Flush()
 	return linesPrinted

@@ -43,8 +43,9 @@ backup() {
     done
 
     if [ "$gui" = true ]; then
-        ps aux | ggrep "[t]ail -f /tmp/dfb-progress" | awk '{print $2}' | xargs kill -9
-        rm /tmp/dfb-progress
+        print_message_to_progress_file "$group" "$repo_name" "gathering_stats"
+    else
+        printf "\n\n  gathering stats for repo $repo_name... "
     fi
 
     repo_raw_data_csv="$STATS_PATH/repo_raw_data.csv"
@@ -55,6 +56,17 @@ backup() {
     | jq -r '[.[]] | @csv' \
     | tr -d '\n' >> "$repo_raw_data_csv" \
     && echo ",$group,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> "$repo_raw_data_csv"
+
+    if [ "$gui" = true ]; then
+        print_message_to_progress_file "$group" "repo" "gathering_stats_done"
+    else
+        echo "done"
+    fi
+
+    if [ "$gui" = true ]; then
+        ps aux | ggrep "[t]ail -f /tmp/dfb-progress" | awk '{print $2}' | xargs kill -9
+        rm /tmp/dfb-progress
+    fi
 
     printf "\n"
 }
@@ -139,8 +151,11 @@ backup_domain() {
                 tail >> /tmp/dfb-progress; \
             else \
                 dfb-progress-parser "$group" "$domain"; \
-                printf "\r"; \
         fi
+
+    if [ "$gui" = true ]; then
+        print_message_to_progress_file "$group" "$domain" "gathering_stats"
+    fi
 
     echo -n "$password" \
         | restic -r "$repo_path" stats latest --mode restore-size --json \
@@ -155,6 +170,14 @@ backup_domain() {
         | jq -r '[.[]] | @csv' \
         | tr -d '\n' >> "$domain_raw_data_csv" \
         && echo ",$group,$domain,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> "$domain_raw_data_csv"
+
+    if [ "$gui" = true ]; then
+        print_message_to_progress_file "$group" "$domain" "gathering_stats_done"
+    else
+        echo "done."
+    fi
+
+    printf "\r"
 }
 
 print_domain_unavailable() {
@@ -162,9 +185,9 @@ print_domain_unavailable() {
         print_message_to_progress_file "$group" "$domain" "unavailable"
         return
     fi
-    echo -ne "\033[50D\033[0C backing up $domain"
+    printf "\033[50D\033[0C backing up $domain "
     tput setaf 8;
-    echo -e "\033[50D\033[50Cunavailable"
+    printf "\033[50D\033[50Cunavailable \n"
     tput sgr0;
 }
 
@@ -173,9 +196,9 @@ print_not_this_repo() {
         print_message_to_progress_file "$group" "$domain" "not backed up to $repo_name"
         return
     fi
-    echo -ne "\033[50D\033[0C backing up $domain"
+    printf "\033[50D\033[0C backing up $domain "
     tput setaf 8;
-    echo -e "\033[50D\033[50Cnot backed up to $repo_name"
+    printf "\033[50D\033[50Cnot backed up to $repo_name \n"
     tput sgr0;
 }
 
