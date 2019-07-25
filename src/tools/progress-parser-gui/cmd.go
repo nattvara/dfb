@@ -177,7 +177,6 @@ func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
 }
 
 func (gui *ProgressGUI) handleDFBMessage(msg restic.DFBMessage) {
-	fmt.Println(msg.Action)
 	switch msg.Action {
 	case "begin":
 		gui.StartNewDomain(msg.Group, msg.Domain)
