@@ -43,8 +43,9 @@ backup_domain() {
         return
     fi
 
-    STATS_PATH="$DFB_PATH/$group/stats"
     snapshots_csv="$STATS_PATH/snapshots.csv"
+    domain_restore_size_csv="$STATS_PATH/domain_restore_size.csv"
+    domain_raw_data_csv="$STATS_PATH/domain_raw_data_csv.csv"
     if [ ! -d "$STATS_PATH" ]; then
         mkdir "$STATS_PATH"
     fi
@@ -72,6 +73,20 @@ backup_domain() {
                 dfb-progress-parser "$group" "$domain"; \
                 printf "\r"; \
         fi
+
+    echo -n "$password" \
+        | restic -r "$repo_path" stats latest --mode restore-size --json \
+        | ggrep "{" \
+        | jq -r '[.[]] | @csv' \
+        | tr -d '\n' >> "$domain_restore_size_csv" \
+        && echo ",$group,$domain,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> "$domain_restore_size_csv"
+
+    echo -n "$password" \
+        | restic -r "$repo_path" stats latest --mode raw-data --json \
+        | ggrep "{" \
+        | jq -r '[.[]] | @csv' \
+        | tr -d '\n' >> "$domain_raw_data_csv" \
+        && echo ",$group,$domain,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> "$domain_raw_data_csv"
 }
 
 print_domain_unavailable() {
@@ -127,6 +142,7 @@ backup() {
     validate_repo $group $repo_name
     repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
     domains_directory="$DFB_PATH/$group/domains"
+    STATS_PATH="$DFB_PATH/$group/stats"
 
     promt_for_password
     verify_password $password $repo_path
@@ -148,6 +164,16 @@ backup() {
         ps aux | ggrep "[t]ail -f /tmp/dfb-progress" | awk '{print $2}' | xargs kill -9
         rm /tmp/dfb-progress
     fi
+
+    repo_raw_data_csv="$STATS_PATH/repo_raw_data.csv"
+
+    echo -n "$password" \
+    | restic -r "$repo_path" stats --mode raw-data --json \
+    | ggrep "{" \
+    | jq -r '[.[]] | @csv' \
+    | tr -d '\n' >> "$repo_raw_data_csv" \
+    && echo ",$group,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> "$repo_raw_data_csv"
+
     printf "\n"
 }
 
