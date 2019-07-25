@@ -30,10 +30,12 @@ brew tap homebrew/cask
 brew cask install osxfuse
 ```
 
-#### Install GNU Grep
+#### Install GNU Grep, jq and coreutils
 
 ```bash
 brew install grep
+brew install jq
+brew install coreutils
 ```
 
 #### Install go and dep
