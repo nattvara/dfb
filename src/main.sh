@@ -92,8 +92,23 @@ verify_env() {
         exit 1
     fi
 
+    if [ "$(command -v gdate)" == "" ]; then
+        echo "coreutils is not installed, run: brew install coreutils"
+        exit 1
+    fi
+
+    if [ "$(command -v jq)" == "" ]; then
+        echo "jq is not installed, run: brew install jq"
+        exit 1
+    fi
+
     if [ "$(command -v dfb-progress-parser)" == "" ]; then
         echo "dfb-progress-parser, view installation instructions in README.md that was distributed with this software"
+        exit 1
+    fi
+
+    if [ "$(command -v dfb-progress-parser-gui)" == "" ]; then
+        echo "dfb-progress-parser-gui, view installation instructions in README.md that was distributed with this software"
         exit 1
     fi
 
