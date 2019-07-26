@@ -2,12 +2,13 @@ package main
 
 import (
 	"bufio"
-	d "dfb/src/internal/domains"
-	"dfb/src/internal/paths"
-	"dfb/src/internal/restic"
 	"encoding/json"
 	"fmt"
 	"os"
+
+	d "github.com/nattvara/dfb/src/internal/domains"
+	"github.com/nattvara/dfb/src/internal/paths"
+	"github.com/nattvara/dfb/src/internal/restic"
 
 	tm "github.com/buger/goterm"
 )

@@ -13,14 +13,15 @@ package main
 
 import (
 	"bufio"
-	d "dfb/src/internal/domains"
-	"dfb/src/internal/paths"
-	"dfb/src/internal/restic"
 	"encoding/json"
 	"fmt"
 	"image/color"
 	"os"
 	"time"
+
+	d "github.com/nattvara/dfb/src/internal/domains"
+	"github.com/nattvara/dfb/src/internal/paths"
+	"github.com/nattvara/dfb/src/internal/restic"
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"

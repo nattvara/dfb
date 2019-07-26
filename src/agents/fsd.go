@@ -1,12 +1,13 @@
 package main
 
 import (
-	g "dfb/src/internal/groups"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	g "github.com/nattvara/dfb/src/internal/groups"
 )
 
 func main() {
