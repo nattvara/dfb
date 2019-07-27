@@ -129,6 +129,10 @@ backup_domain() {
         return
     fi
 
+    if [ "$gui" = true ]; then
+        print_message_to_progress_file "$group" "$domain" "begin"
+    fi
+
     snapshots_csv="$STATS_PATH/snapshots.csv"
     domain_restore_size_csv="$STATS_PATH/domain_restore_size.csv"
     domain_raw_data_csv="$STATS_PATH/domain_raw_data_csv.csv"
@@ -153,8 +157,7 @@ backup_domain() {
         ) \
         | if [ "$gui" = true ]; \
             then \
-                print_message_to_progress_file "$group" "$domain" "begin"; \
-                tail >> /tmp/dfb-progress; \
+                ggrep "" >> /tmp/dfb-progress; \
             else \
                 dfb-progress-parser "$group" "$domain"; \
         fi
@@ -216,5 +219,5 @@ print_message_to_progress_file() {
 {"message_type":"dfb","action":"$action","group":"$group","domain":"$domain"}
 END
     )
-    echo $json >> /tmp/dfb-progress
+    printf "$json\n\n" >> /tmp/dfb-progress
 }
