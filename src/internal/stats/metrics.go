@@ -152,7 +152,7 @@ func (m *SnapshotsDataAdded) Init(timeUnit string) {
 	m.Formatter = &BytesFormatter{}
 }
 
-// FetchDataFromDB from db fetches appropriate data from DB and appends values
+// FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
 func (m *SnapshotsDataAdded) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
@@ -177,7 +177,7 @@ func (m *SnapshotsFilesNewAndChanged) Init(timeUnit string) {
 	m.Formatter = &AmountFormatter{}
 }
 
-// FetchDataFromDB from db fetches appropriate data from DB and appends values
+// FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
 func (m *SnapshotsFilesNewAndChanged) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
@@ -202,7 +202,7 @@ func (m *SnapshotsFilesProcessed) Init(timeUnit string) {
 	m.Formatter = &AmountFormatter{}
 }
 
-// FetchDataFromDB from db fetches appropriate data from DB and appends values
+// FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
 func (m *SnapshotsFilesProcessed) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
