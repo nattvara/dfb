@@ -29,7 +29,7 @@ func (c *LineChart) WriteToFile(path string) {
 	file, err := os.Create(path)
 	defer file.Close()
 	if err != nil {
-		log.Fatal("failed to open file", err)
+		log.Fatal("failed to open file, ", err)
 	}
 
 	buffer.WriteTo(file)
