@@ -27,6 +27,7 @@ var shouldListAggregators bool
 var cmd = &cobra.Command{
 	Use:   "stats [group] [repo] [metric]",
 	Short: "Make a chart for a backup metric",
+	Long:  "The stats command allows a user to view metrics about the backed up data",
 	Args:  cobra.MinimumNArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		groupName := args[0]
