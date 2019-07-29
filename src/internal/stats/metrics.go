@@ -12,7 +12,8 @@ const (
 	AllDomains = ".."
 )
 
-var metrics = map[string]Metric{
+// Metrics is a map of availible metrics
+var Metrics = map[string]Metric{
 	"snapshots-data-added":            &SnapshotsDataAdded{},
 	"snapshots-files-new-and-changed": &SnapshotsFilesNewAndChanged{},
 	"snapshots-files-processed":       &SnapshotsFilesProcessed{},
@@ -20,10 +21,10 @@ var metrics = map[string]Metric{
 
 // NewMetric returns a new metric
 func NewMetric(name string, repo string, group string, domain string, timeUnit string, aggregator string) Metric {
-	if _, ok := metrics[name]; !ok {
+	if _, ok := Metrics[name]; !ok {
 		log.Fatal("unknown metric " + name)
 	}
-	m := metrics[name]
+	m := Metrics[name]
 	m.Init(timeUnit)
 	m.SetTitle(name, repo, group, domain, aggregator)
 	m.SetMetadata(name, repo, group, domain, aggregator)
