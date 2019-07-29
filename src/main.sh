@@ -35,6 +35,9 @@ main() {
     elif [ "${1:-}" == "fsd" ]
     then
         fsd "$@"
+    elif [ "${1:-}" == "stats" ]
+    then
+        stats "$@"
     else
         print_main_help
     fi
@@ -64,6 +67,7 @@ Available Commands:
   backup      Backup a group of domains to a repo.
   recover     Mount backed up versions of domains for recovery.
   fsd         Control the filesystem agent.
+  stats       Make a chart for a backup metric.
 
 Options:
   -h --help     Show this screen.

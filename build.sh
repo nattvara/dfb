@@ -18,6 +18,7 @@ cat src/commands/groups.sh >> $OUT && printf "\n" >> $OUT
 cat src/commands/domains.sh >> $OUT && printf "\n" >> $OUT
 cat src/commands/backup.sh >> $OUT && printf "\n" >> $OUT
 cat src/commands/recover.sh >> $OUT && printf "\n" >> $OUT
+cat src/commands/stats.sh >> $OUT && printf "\n" >> $OUT
 cat src/commands/fsd.sh >> $OUT && printf "\n" >> $OUT
 cat src/helpers/password.sh >> $OUT && printf "\n" >> $OUT
 cat src/helpers/validation.sh >> $OUT && printf "\n" >> $OUT
@@ -28,4 +29,5 @@ chmod +x $OUT
 
 go build -o ./build/dfb-progress-parser -i ./src/tools/progress-parser/cmd.go
 go build -o ./build/dfb-progress-parser-gui -i ./src/tools/progress-parser-gui/cmd.go
+go build -o ./build/dfb-stats -i ./src/tools/stats-viewer/main.go
 go build -o ./build/dfb-fsd -i ./src/agents/fsd.go
