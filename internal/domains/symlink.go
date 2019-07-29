@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/nattvara/dfb/src/internal/paths"
+	"github.com/nattvara/dfb/internal/paths"
 )
 
 // Symlink is a symbolik link to domains real content, not all domains

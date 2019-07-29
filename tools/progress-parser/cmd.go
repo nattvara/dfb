@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	d "github.com/nattvara/dfb/src/internal/domains"
-	"github.com/nattvara/dfb/src/internal/paths"
-	"github.com/nattvara/dfb/src/internal/restic"
+	d "github.com/nattvara/dfb/internal/domains"
+	"github.com/nattvara/dfb/internal/paths"
+	"github.com/nattvara/dfb/internal/restic"
 
 	tm "github.com/buger/goterm"
 )

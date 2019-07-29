@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	g "github.com/nattvara/dfb/src/internal/groups"
+	g "github.com/nattvara/dfb/internal/groups"
 )
 
 func main() {

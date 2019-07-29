@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-memdb"
-	"github.com/nattvara/dfb/src/internal/paths"
+	"github.com/nattvara/dfb/internal/paths"
 )
 
 // SnapshotSummary is based on a message emitted by restic

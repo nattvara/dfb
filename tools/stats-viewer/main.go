@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/nattvara/dfb/src/internal/stats"
+	"github.com/nattvara/dfb/internal/stats"
 
 	"github.com/spf13/cobra"
 )

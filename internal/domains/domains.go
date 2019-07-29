@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/nattvara/dfb/src/internal/paths"
+	"github.com/nattvara/dfb/internal/paths"
 )
 
 // Domain is a directory a directory to backup

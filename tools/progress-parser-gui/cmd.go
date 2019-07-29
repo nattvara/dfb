@@ -19,9 +19,9 @@ import (
 	"os"
 	"time"
 
-	d "github.com/nattvara/dfb/src/internal/domains"
-	"github.com/nattvara/dfb/src/internal/paths"
-	"github.com/nattvara/dfb/src/internal/restic"
+	d "github.com/nattvara/dfb/internal/domains"
+	"github.com/nattvara/dfb/internal/paths"
+	"github.com/nattvara/dfb/internal/restic"
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
