@@ -70,9 +70,9 @@ func csvReadSummaries(filename string) []*SnapshotSummary {
 
 			GroupWithWildcard:  []string{line[14], AllDomains},
 			DomainWithWildcard: []string{line[15], AllDomains},
-			DateString:         date.Format(getDateLayoutForTimeUnit("day")),
-			MonthString:        date.Format(getDateLayoutForTimeUnit("month")),
-			YearString:         date.Format(getDateLayoutForTimeUnit("year")),
+			DateString:         date.Format(getDateLayoutForTimeUnit(TimeUnitDays)),
+			MonthString:        date.Format(getDateLayoutForTimeUnit(TimeUnitMonths)),
+			YearString:         date.Format(getDateLayoutForTimeUnit(TimeUnitYears)),
 		}
 		summaries = append(summaries, summary)
 	}

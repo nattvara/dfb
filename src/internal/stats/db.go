@@ -138,11 +138,11 @@ func (db *DB) InsertSnapshotSummaries(summaries []*SnapshotSummary) {
 func (db *DB) GetIndexFromTimeUnit(timeUnit string) string {
 	var index string
 	switch strings.ToLower(timeUnit) {
-	case "day":
+	case TimeUnitDays:
 		index = "repo_group_domain_daily"
-	case "month":
+	case TimeUnitMonths:
 		index = "repo_group_domain_monthly"
-	case "year":
+	case TimeUnitYears:
 		index = "repo_group_domain_yearly"
 	default:
 		log.Fatal("unsupported timeUnit: " + timeUnit)

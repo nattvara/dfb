@@ -8,15 +8,33 @@ import (
 	"github.com/hashicorp/go-memdb"
 )
 
+const (
+	// TimeUnitDays is an identifier that means a metrics values should be grouped by day
+	TimeUnitDays = "days"
+
+	// TimeUnitMonths is an identifier that means a metrics values should be grouped by month
+	TimeUnitMonths = "months"
+
+	// TimeUnitYears is an identifier that means a metrics values should be grouped by year
+	TimeUnitYears = "years"
+)
+
+// TimeUnits contains the supported time units
+var TimeUnits = []string{
+	TimeUnitDays,
+	TimeUnitMonths,
+	TimeUnitYears,
+}
+
 // getDateLayoutForTimeUnit returns the layout used for stringifying a time.Time for given timeUnit
 func getDateLayoutForTimeUnit(timeUnit string) string {
 	var layout string
 	switch strings.ToLower(timeUnit) {
-	case "day":
+	case TimeUnitDays:
 		layout = "2006-01-02"
-	case "month":
+	case TimeUnitMonths:
 		layout = "Jan 2006"
-	case "year":
+	case TimeUnitYears:
 		layout = "2006"
 	default:
 		log.Fatal("unsupported timeUnit: " + timeUnit)
@@ -91,11 +109,11 @@ func (it *DateIterator) QueryDB(table string, meta map[string]string, date time.
 // incrementDate increments currentDate of DateIterator it by given amount
 func (it *DateIterator) incrementDate(amount int) {
 	switch strings.ToLower(it.TimeUnit) {
-	case "day":
+	case TimeUnitDays:
 		it.currentDate.Value = it.currentDate.Value.AddDate(0, 0, amount)
-	case "month":
+	case TimeUnitMonths:
 		it.currentDate.Value = it.currentDate.Value.AddDate(0, amount, 0)
-	case "year":
+	case TimeUnitYears:
 		it.currentDate.Value = it.currentDate.Value.AddDate(amount, 0, 0)
 	default:
 		log.Fatal("unsupported time unit: " + it.TimeUnit)
@@ -106,11 +124,11 @@ func (it *DateIterator) incrementDate(amount int) {
 func (it *DateIterator) decrementDate(amount int) {
 	amount *= -1
 	switch strings.ToLower(it.TimeUnit) {
-	case "day":
+	case TimeUnitDays:
 		it.currentDate.Value = it.currentDate.Value.AddDate(0, 0, amount)
-	case "month":
+	case TimeUnitMonths:
 		it.currentDate.Value = it.currentDate.Value.AddDate(0, amount, 0)
-	case "year":
+	case TimeUnitYears:
 		it.currentDate.Value = it.currentDate.Value.AddDate(amount, 0, 0)
 	default:
 		log.Fatal("unsupported time unit: " + it.TimeUnit)
