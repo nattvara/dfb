@@ -4,22 +4,25 @@ import (
 	"log"
 )
 
+// Aggregators is a map of availible aggregators
+var Aggregators = map[string]Aggregator{
+	"sum":        &Sum{},
+	"accumulate": &Accumulate{},
+}
+
 // Aggregator is a type that provides a method to aggregate values gathered
 // by metric when it has queried the DB
 type Aggregator interface {
 	Aggregate(output []float64, values []float64) []float64
 }
 
-// NewAggregator returns an aggregator that matches string a
-func NewAggregator(a string) Aggregator {
-	switch a {
-	case "sum":
-		return &Sum{}
-	case "accumulate":
-		return &Accumulate{}
+// NewAggregator returns an aggregator that matches string name
+func NewAggregator(name string) Aggregator {
+	if _, ok := Aggregators[name]; !ok {
+		log.Fatal("unknown aggregator " + name)
 	}
-	log.Fatal("unknown aggregator " + a)
-	return nil
+	a := Aggregators[name]
+	return a
 }
 
 // Sum is an aggregator that sums the values provided and appends it to output
