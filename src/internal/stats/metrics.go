@@ -198,7 +198,7 @@ type SnapshotsFilesProcessed struct {
 // Init initializes the metric
 func (m *SnapshotsFilesProcessed) Init(timeUnit string) {
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
-	m.Name = "new files"
+	m.Name = "files processed"
 	m.Formatter = &AmountFormatter{}
 }
 
