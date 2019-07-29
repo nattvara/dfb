@@ -29,5 +29,5 @@ chmod +x $OUT
 
 go build -o ./build/dfb-progress-parser -i ./tools/progress-parser/cmd.go
 go build -o ./build/dfb-progress-parser-gui -i ./tools/progress-parser-gui/cmd.go
-go build -o ./build/dfb-stats -i ./tools/stats-viewer/main.go
+go build -o ./build/dfb-stats -i ./tools/stats/cmd.go
 go build -o ./build/dfb-fsd -i ./agents/fsd.go
