@@ -43,13 +43,32 @@ func (f *AmountFormatter) Format(value float64) string {
 	var exp string
 	if value >= 1000000000 {
 		value = math.Round(value*10) / 10000000000
-		exp = "b"
+		exp = " b"
 	} else if value >= 1000000 {
 		value = math.Round(value*10) / 10000000
-		exp = "m"
+		exp = " m"
 	} else if value >= 1000 {
 		value = math.Round(value*10) / 10000
-		exp = "k"
+		exp = " k"
 	}
 	return fmt.Sprintf("%.1f%s", value, exp)
+}
+
+// TimeFormatter formats an amount of time to a shorter representation
+// such as 12 s, 31 min or 2.3 h
+type TimeFormatter struct{}
+
+// Format formats provided float64 value to a string
+func (f *TimeFormatter) Format(value float64) string {
+	var unit string
+	if value < 60 {
+		unit = "s"
+	} else if value < 60*60 {
+		value = value / float64(60)
+		unit = "min"
+	} else if value >= 60*60*60 {
+		value = value / float64(60*60)
+		unit = "h"
+	}
+	return fmt.Sprintf("%.1f %s", value, unit)
 }
