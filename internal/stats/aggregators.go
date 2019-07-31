@@ -8,6 +8,7 @@ import (
 var Aggregators = map[string]Aggregator{
 	"sum":        &Sum{},
 	"accumulate": &Accumulate{},
+	"average":    &Average{},
 }
 
 // Aggregator is a type that provides a method to aggregate values gathered
@@ -51,4 +52,20 @@ func (a *Accumulate) Aggregate(output []float64, values []float64) []float64 {
 		sum += output[len(output)-1]
 	}
 	return append(output, sum)
+}
+
+type Average struct{}
+
+func (a *Average) Aggregate(output []float64, values []float64) []float64 {
+	var sum float64
+	var avg float64
+	number := float64(len(values))
+
+	for i := range values {
+		sum += values[i]
+	}
+	if number > 0 {
+		avg = sum / float64(len(values))
+	}
+	return append(output, avg)
 }
