@@ -65,6 +65,56 @@ type DB struct {
 	memdb *memdb.MemDB
 }
 
+// Load loads db with data from csv files for given group
+func (db *DB) Load(groupName string) {
+	statsDir := fmt.Sprintf("%s/%s/stats", paths.DFB(), groupName)
+
+	db.InsertSnapshotSummaries(csvReadSummaries(statsDir + "/snapshots.csv"))
+	db.InsertRepoBackupTimes(csvReadRepoBackupTime(statsDir + "/repo_time_took.csv"))
+}
+
+// InsertSnapshotSummaries inserts snapshot summaries into memdb instance
+func (db *DB) InsertSnapshotSummaries(summaries []*SnapshotSummary) {
+	txn := db.memdb.Txn(true)
+	for _, snapshot := range summaries {
+		if err := txn.Insert("snapshot", snapshot); err != nil {
+			panic(err)
+		}
+	}
+	txn.Commit()
+}
+
+// InsertRepoBackupTimes inserts backup times into memdb instance
+func (db *DB) InsertRepoBackupTimes(backupTimes []*RepoBackupTime) {
+	txn := db.memdb.Txn(true)
+	for _, backup := range backupTimes {
+		if err := txn.Insert("repo_backup_times", backup); err != nil {
+			panic(err)
+		}
+	}
+	txn.Commit()
+}
+
+// GetIndexFromTimeUnit returns the index to use for given time unit, use includeDomain
+// to search for a specifc domain (not supported by all indices)
+func (db *DB) GetIndexFromTimeUnit(timeUnit string, includeDomain bool) string {
+	index := "repo_group"
+	if includeDomain {
+		index += "_domain"
+	}
+	switch strings.ToLower(timeUnit) {
+	case TimeUnitDays:
+		index += "_daily"
+	case TimeUnitMonths:
+		index += "_monthly"
+	case TimeUnitYears:
+		index += "_yearly"
+	default:
+		log.Fatal("unsupported timeUnit: " + timeUnit)
+	}
+	return index
+}
+
 // NewDB returns a new DB instance
 func NewDB() *DB {
 	schema := &memdb.DBSchema{
@@ -175,54 +225,4 @@ func NewDB() *DB {
 	return &DB{
 		memdb: memdb,
 	}
-}
-
-// Load loads db with data from csv files for given group
-func (db *DB) Load(groupName string) {
-	statsDir := fmt.Sprintf("%s/%s/stats", paths.DFB(), groupName)
-
-	db.InsertSnapshotSummaries(csvReadSummaries(statsDir + "/snapshots.csv"))
-	db.InsertRepoBackupTimes(csvReadRepoBackupTime(statsDir + "/repo_time_took.csv"))
-}
-
-// InsertSnapshotSummaries inserts snapshot summaries into memdb instance
-func (db *DB) InsertSnapshotSummaries(summaries []*SnapshotSummary) {
-	txn := db.memdb.Txn(true)
-	for _, snapshot := range summaries {
-		if err := txn.Insert("snapshot", snapshot); err != nil {
-			panic(err)
-		}
-	}
-	txn.Commit()
-}
-
-// InsertRepoBackupTimes inserts backup times into memdb instance
-func (db *DB) InsertRepoBackupTimes(backupTimes []*RepoBackupTime) {
-	txn := db.memdb.Txn(true)
-	for _, backup := range backupTimes {
-		if err := txn.Insert("repo_backup_times", backup); err != nil {
-			panic(err)
-		}
-	}
-	txn.Commit()
-}
-
-// GetIndexFromTimeUnit returns the index to use for given time unit, use includeDomain
-// to search for a specifc domain (not supported by all indices)
-func (db *DB) GetIndexFromTimeUnit(timeUnit string, includeDomain bool) string {
-	index := "repo_group"
-	if includeDomain {
-		index += "_domain"
-	}
-	switch strings.ToLower(timeUnit) {
-	case TimeUnitDays:
-		index += "_daily"
-	case TimeUnitMonths:
-		index += "_monthly"
-	case TimeUnitYears:
-		index += "_yearly"
-	default:
-		log.Fatal("unsupported timeUnit: " + timeUnit)
-	}
-	return index
 }
