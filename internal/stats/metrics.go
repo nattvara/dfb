@@ -17,6 +17,7 @@ var Metrics = map[string]Metric{
 	"snapshots-data-added":            &SnapshotsDataAdded{},
 	"snapshots-files-new-and-changed": &SnapshotsFilesNewAndChanged{},
 	"snapshots-files-processed":       &SnapshotsFilesProcessed{},
+	"backup-time":                     &BackupTime{},
 }
 
 // NewMetric returns a new metric
@@ -227,10 +228,36 @@ func (m *SnapshotsFilesProcessed) Init(timeUnit string) {
 func (m *SnapshotsFilesProcessed) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("snapshot", m.Meta, date.Value)
+		records := iterator.QueryDB("snapshot", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "TotalFilesProcessed", iterator.CurrentOffset)
+		}
+	}
+}
+
+// BackupTime is a metric of the total time a backup took
+type BackupTime struct {
+	metricData
+}
+
+// Init initializes the metric
+func (m *BackupTime) Init(timeUnit string) {
+	m.supportsDomains = false
+	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
+	m.Name = "backup time"
+	m.Formatter = &TimeFormatter{}
+}
+
+// FetchDataFromDB fetches appropriate data from DB and appends values
+// for given timeUnit and timeLength
+func (m *BackupTime) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
+	iterator := NewDateIterator(db, timeUnit, timeLength)
+	for date := iterator.Next(); date.Valid; date = iterator.Next() {
+		records := iterator.QueryDB("repo_backup_times", m, date.Value)
+		m.AddDate(date.Value)
+		for obj := records.Next(); obj != nil; obj = records.Next() {
+			m.AppendValues(obj, "Took", iterator.CurrentOffset)
 		}
 	}
 }
