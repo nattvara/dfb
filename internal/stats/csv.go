@@ -2,8 +2,8 @@ package stats
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -78,4 +78,50 @@ func csvReadSummaries(filename string) []*SnapshotSummary {
 	}
 
 	return summaries
+}
+
+// csvReadRepoBackupTime reads given csv file, parses and returns repo backup times
+func csvReadRepoBackupTime(filename string) []*RepoBackupTime {
+	f, err := os.Open(filename)
+	defer f.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	var backupTimes []*RepoBackupTime
+
+	reader := csv.NewReader(f)
+	lineNumber := -1
+	for {
+		line, err := reader.Read()
+		lineNumber++
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			if err, ok := err.(*csv.ParseError); ok && err.Err == csv.ErrFieldCount {
+				log.Printf("%s parse error at line %v\n", filename, lineNumber)
+				continue
+			}
+		}
+
+		duration, _ := strconv.ParseFloat(line[0], 64)
+		date, _ := time.Parse("2006-01-02T15:04:05Z0700", line[3])
+
+		bt := &RepoBackupTime{
+			Took: duration,
+
+			ID:    lineNumber,
+			Group: line[1],
+			Repo:  line[2],
+
+			DateString:  date.Format(getDateLayoutForTimeUnit(TimeUnitDays)),
+			MonthString: date.Format(getDateLayoutForTimeUnit(TimeUnitMonths)),
+			YearString:  date.Format(getDateLayoutForTimeUnit(TimeUnitYears)),
+		}
+		backupTimes = append(backupTimes, bt)
+	}
+
+	return backupTimes
 }
