@@ -36,7 +36,9 @@ func NewMetric(name string, repo string, group string, domain string, timeUnit s
 type Metric interface {
 	SetTitle(name string, repo string, group string, domain string, aggregator string)
 	GetTitle() string
+	SupportsDomains() bool
 	SetMetadata(name string, repo string, group string, domain string, aggregator string)
+	GetMetadata(property string) string
 	GetValues(a Aggregator) []float64
 	GetLabels() []time.Time
 	GetDateLayout() string
@@ -48,13 +50,14 @@ type Metric interface {
 
 // metricData is type that provides for setter and getters for Metrics
 type metricData struct {
-	Title      string
-	Name       string
-	Meta       map[string]string
-	Data       [][]float64
-	Dates      []time.Time
-	DateLayout string
-	Formatter  Formatter
+	Title           string
+	Name            string
+	supportsDomains bool
+	Meta            map[string]string
+	Data            [][]float64
+	Dates           []time.Time
+	DateLayout      string
+	Formatter       Formatter
 }
 
 // SetTitle sets the title of a metricData m from given input data
@@ -80,9 +83,22 @@ func (m *metricData) GetTitle() string {
 	return m.Title
 }
 
+// SupportsDomains returns whether metricData m supports specifying domain
+func (m *metricData) SupportsDomains() bool {
+	return m.supportsDomains
+}
+
 // SetMetadata sets the metadata of metricData m
 func (m *metricData) SetMetadata(name string, repo string, group string, domain string, aggregator string) {
 	m.Meta = map[string]string{"repo": repo, "group": group, "domain": domain, "aggregator": aggregator}
+}
+
+// GetMetadata returns value for requested metadata property from metricData m
+func (m *metricData) GetMetadata(property string) string {
+	if _, ok := m.Meta[property]; !ok {
+		log.Fatal("unknown metadata property " + property)
+	}
+	return m.Meta[property]
 }
 
 // AddDate adds a date that metricData m should have values for
@@ -99,7 +115,7 @@ func (m *metricData) AppendValues(obj interface{}, field string, date int) {
 
 	var value float64
 	switch fv.Kind().String() {
-	case "float":
+	case "float64":
 		value = fv.Float()
 	case "int":
 		value = float64(fv.Int())
@@ -148,6 +164,7 @@ type SnapshotsDataAdded struct {
 
 // Init initializes the metric
 func (m *SnapshotsDataAdded) Init(timeUnit string) {
+	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
 	m.Name = "data added"
 	m.Formatter = &BytesFormatter{}
@@ -158,7 +175,7 @@ func (m *SnapshotsDataAdded) Init(timeUnit string) {
 func (m *SnapshotsDataAdded) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("snapshot", m.Meta, date.Value)
+		records := iterator.QueryDB("snapshot", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "DataAdded", iterator.CurrentOffset)
@@ -173,6 +190,7 @@ type SnapshotsFilesNewAndChanged struct {
 
 // Init initializes the metric
 func (m *SnapshotsFilesNewAndChanged) Init(timeUnit string) {
+	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
 	m.Name = "new files"
 	m.Formatter = &AmountFormatter{}
@@ -183,7 +201,7 @@ func (m *SnapshotsFilesNewAndChanged) Init(timeUnit string) {
 func (m *SnapshotsFilesNewAndChanged) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("snapshot", m.Meta, date.Value)
+		records := iterator.QueryDB("snapshot", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendMultipleValues(obj, []string{"FilesNew", "FilesChanged"}, iterator.CurrentOffset)
@@ -198,6 +216,7 @@ type SnapshotsFilesProcessed struct {
 
 // Init initializes the metric
 func (m *SnapshotsFilesProcessed) Init(timeUnit string) {
+	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
 	m.Name = "files processed"
 	m.Formatter = &AmountFormatter{}

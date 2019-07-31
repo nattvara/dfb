@@ -207,16 +207,20 @@ func (db *DB) InsertRepoBackupTimes(backupTimes []*RepoBackupTime) {
 	txn.Commit()
 }
 
-// GetIndexFromTimeUnit returns the index to use for given time unit
-func (db *DB) GetIndexFromTimeUnit(timeUnit string) string {
-	var index string
+// GetIndexFromTimeUnit returns the index to use for given time unit, use includeDomain
+// to search for a specifc domain (not supported by all indices)
+func (db *DB) GetIndexFromTimeUnit(timeUnit string, includeDomain bool) string {
+	index := "repo_group"
+	if includeDomain {
+		index += "_domain"
+	}
 	switch strings.ToLower(timeUnit) {
 	case TimeUnitDays:
-		index = "repo_group_domain_daily"
+		index += "_daily"
 	case TimeUnitMonths:
-		index = "repo_group_domain_monthly"
+		index += "_monthly"
 	case TimeUnitYears:
-		index = "repo_group_domain_yearly"
+		index += "_yearly"
 	default:
 		log.Fatal("unsupported timeUnit: " + timeUnit)
 	}

@@ -84,20 +84,25 @@ func (it *DateIterator) Next() *Date {
 	return it.currentDate
 }
 
-// QueryDB queries the DB of DateIterator it for values in table matching date and metadata
-func (it *DateIterator) QueryDB(table string, meta map[string]string, date time.Time) memdb.ResultIterator {
+// QueryDB queries the DB of DateIterator it for values in table matching date and metric metadata
+func (it *DateIterator) QueryDB(table string, metric Metric, date time.Time) memdb.ResultIterator {
 	layout := getDateLayoutForTimeUnit(it.TimeUnit)
 
 	txn := it.db.memdb.Txn(false)
 	defer txn.Abort()
 
+	var args []interface{}
+	args = append(args, metric.GetMetadata("repo"))
+	args = append(args, metric.GetMetadata("group"))
+	if metric.SupportsDomains() {
+		args = append(args, metric.GetMetadata("domain"))
+	}
+	args = append(args, date.Format(layout))
+
 	records, err := txn.Get(
 		table,
-		it.db.GetIndexFromTimeUnit(it.TimeUnit),
-		meta["repo"],
-		meta["group"],
-		meta["domain"],
-		date.Format(layout),
+		it.db.GetIndexFromTimeUnit(it.TimeUnit, metric.SupportsDomains()),
+		args...,
 	)
 	if err != nil {
 		log.Fatal("failed to fetch data from db for metric", err)
