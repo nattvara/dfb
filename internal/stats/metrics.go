@@ -278,6 +278,24 @@ func (m *RepoDiskSpace) Init(timeUnit string) {
 	m.Formatter = &BytesFormatter{}
 }
 
+// SetTitle sets the title of a RepoDiskSpace metric m from given input data
+func (m *RepoDiskSpace) SetTitle(name string, repo string, group string, domain string, aggregator string) {
+	var d string
+	if domain == AllDomains {
+		d = "all domains"
+	} else {
+		d = domain
+	}
+	m.Title = fmt.Sprintf(
+		"%s %s by %s in group %s of repo %s",
+		aggregator,
+		m.Name,
+		d,
+		group,
+		repo,
+	)
+}
+
 // FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
 func (m *RepoDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
