@@ -15,6 +15,7 @@ if [ -d $app_path ]; then
     rm -r $app_path
 fi
 
+printf "moving files... "
 mv dfb.app /Applications
 
 if [ -f "$symlink_target/dfb" ]; then
@@ -52,3 +53,5 @@ home=$(echo $HOME | sed 's_/_\\/_g')
 sed -e "s/~/$home/g" resources/dfb-fsd.plist > $launch_agent
 
 launchctl load $launch_agent
+
+echo "done."

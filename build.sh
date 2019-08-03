@@ -29,7 +29,7 @@ echo 'main "$@"' >> $OUT
 
 chmod +x $OUT
 
-echo "done"
+echo "done."
 printf "compiling binaries... "
 
 go build -o ./build/dfb-progress-parser -i ./tools/progress-parser/cmd.go
@@ -37,7 +37,7 @@ FYNE_FONT=/Applications/dfb.app/Contents/Resources/fonts/Lato-Black.ttf go build
 go build -o ./build/dfb-stats -i ./tools/stats/cmd.go
 go build -o ./build/dfb-fsd -i ./agents/fsd.go
 
-echo "done"
+echo "done."
 printf "packaging application... "
 
 fyne package -executable build/dfb-progress-parser-gui -icon resources/icon.png -name dfb
@@ -53,4 +53,4 @@ cp build/dfb-fsd dfb.app/Contents/Resources/bin/dfb-fsd
 echo "FYNE_FONT=/Applications/dfb.app/Contents/Resources/fonts/Lato-Black.ttf /Applications/dfb.app/Contents/MacOS/dfb-progress-parser-gui" > dfb.app/Contents/Resources/bin/dfb-progress-parser-gui
 chmod +x dfb.app/Contents/Resources/bin/dfb-progress-parser-gui
 
-echo "done"
+echo "done."
