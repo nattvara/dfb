@@ -49,6 +49,7 @@ type Metric interface {
 	GetFormatter() Formatter
 
 	Init(timeUnit string)
+	GetDefaultAggregator() Aggregator
 	FetchDataFromDB(db *DB, timeUnit string, timeLength int)
 }
 
@@ -176,6 +177,11 @@ func (m *DomainDataAdded) Init(timeUnit string) {
 	m.Formatter = &BytesFormatter{}
 }
 
+// GetDefaultAggregator returns the default aggregator for metric m
+func (m *DomainDataAdded) GetDefaultAggregator() Aggregator {
+	return &Sum{}
+}
+
 // FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
 func (m *DomainDataAdded) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
@@ -201,6 +207,11 @@ func (m *DomainFilesNewAndChanged) Init(timeUnit string) {
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
 	m.Name = "new and changed files in"
 	m.Formatter = &AmountFormatter{}
+}
+
+// GetDefaultAggregator returns the default aggregator for metric m
+func (m *DomainFilesNewAndChanged) GetDefaultAggregator() Aggregator {
+	return &Sum{}
 }
 
 // FetchDataFromDB fetches appropriate data from DB and appends values
@@ -230,6 +241,11 @@ func (m *DomainFilesProcessed) Init(timeUnit string) {
 	m.Formatter = &AmountFormatter{}
 }
 
+// GetDefaultAggregator returns the default aggregator for metric m
+func (m *DomainFilesProcessed) GetDefaultAggregator() Aggregator {
+	return &Sum{}
+}
+
 // FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
 func (m *DomainFilesProcessed) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
@@ -254,6 +270,11 @@ func (m *BackupTime) Init(timeUnit string) {
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
 	m.Name = "backup time of"
 	m.Formatter = &TimeFormatter{}
+}
+
+// GetDefaultAggregator returns the default aggregator for metric m
+func (m *BackupTime) GetDefaultAggregator() Aggregator {
+	return &Sum{}
 }
 
 // FetchDataFromDB fetches appropriate data from DB and appends values
@@ -282,6 +303,11 @@ func (m *RepoDiskSpace) Init(timeUnit string) {
 	m.Formatter = &BytesFormatter{}
 }
 
+// GetDefaultAggregator returns the default aggregator for metric m
+func (m *RepoDiskSpace) GetDefaultAggregator() Aggregator {
+	return &Average{}
+}
+
 // FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
 func (m *RepoDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
@@ -308,6 +334,11 @@ func (m *DomainDiskSpace) Init(timeUnit string) {
 	m.Formatter = &BytesFormatter{}
 }
 
+// GetDefaultAggregator returns the default aggregator for metric m
+func (m *DomainDiskSpace) GetDefaultAggregator() Aggregator {
+	return &Average{}
+}
+
 // FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
 func (m *DomainDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
@@ -324,6 +355,11 @@ func (m *DomainDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength in
 // DomainDiskSpaceOnRestore is a metric of how much disk space a domain would take on restore
 type DomainDiskSpaceOnRestore struct {
 	metricData
+}
+
+// GetDefaultAggregator returns the default aggregator for metric m
+func (m *DomainDiskSpaceOnRestore) GetDefaultAggregator() Aggregator {
+	return &Average{}
 }
 
 // Init initializes the metric

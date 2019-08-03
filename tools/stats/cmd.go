@@ -61,7 +61,13 @@ var cmd = &cobra.Command{
 
 		metric.FetchDataFromDB(db, timeUnit, timeLength)
 
-		if aggregator, err = stats.NewAggregator(aggregatorName); err != nil {
+		if aggregatorName != "" {
+			aggregator, err = stats.NewAggregator(aggregatorName)
+		} else {
+			aggregator = metric.GetDefaultAggregator()
+		}
+
+		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -83,7 +89,7 @@ func main() {
 	cmd.Flags().StringVarP(&domainName, "domain", "d", "", "which domain to use for metric, not availiable for all metrics, optional/required for some metrics")
 	cmd.Flags().StringVarP(&timeUnit, "time-unit", "u", stats.TimeUnitDays, "time unit to use for metric")
 	cmd.Flags().IntVarP(&timeLength, "time-length", "l", 7, "how many time-units of history should be included")
-	cmd.Flags().StringVarP(&aggregatorName, "aggregator", "a", "sum", "aggregation method to use for a metric")
+	cmd.Flags().StringVarP(&aggregatorName, "aggregator", "a", "", "aggregation method to use for a metric")
 	cmd.Flags().StringVarP(&outputPath, "output", "o", "/tmp/dfb-metric.png", "output path for png image of metric")
 	cmd.Flags().BoolVarP(&shouldListMetrics, "list-metrics", "", false, "list availiable metrics")
 	cmd.Flags().BoolVarP(&shouldListTimeUnits, "list-time-units", "", false, "list availiable time units")
