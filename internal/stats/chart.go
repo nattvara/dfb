@@ -42,8 +42,9 @@ func (c *LineChart) WriteToFile(path string) error {
 func (c *LineChart) createGraph() chart.Chart {
 	latoRegular := fonts.GetFont(fonts.LatoRegular)
 	latoBlack := fonts.GetFont(fonts.LatoBlack)
+
 	return chart.Chart{
-		Width:  1024,
+		Width:  2048,
 		Height: 1024,
 		Title:  c.Metric.GetTitle(),
 		TitleStyle: chart.Style{
@@ -52,7 +53,7 @@ func (c *LineChart) createGraph() chart.Chart {
 			},
 			Show:      true,
 			Font:      latoBlack,
-			FontSize:  20,
+			FontSize:  38,
 			FontColor: chart.ColorWhite,
 		},
 		Background: chart.Style{
