@@ -50,7 +50,7 @@ cp build/dfb dfb.app/Contents/Resources/bin/dfb
 cp build/dfb-progress-parser dfb.app/Contents/Resources/bin/dfb-progress-parser
 cp build/dfb-stats dfb.app/Contents/Resources/bin/dfb-stats
 cp build/dfb-fsd dfb.app/Contents/Resources/bin/dfb-fsd
-echo "FYNE_FONT=/Applications/dfb.app/Contents/Resources/fonts/Lato-Regular.ttf /Applications/dfb.app/Contents/MacOS/dfb-progress-parser-gui" > dfb.app/Contents/Resources/bin/dfb-progress-parser-gui
+echo "FYNE_FONT=/Applications/dfb.app/Contents/Resources/fonts/Lato-Black.ttf /Applications/dfb.app/Contents/MacOS/dfb-progress-parser-gui" > dfb.app/Contents/Resources/bin/dfb-progress-parser-gui
 chmod +x dfb.app/Contents/Resources/bin/dfb-progress-parser-gui
 
 echo "done"
