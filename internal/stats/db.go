@@ -78,6 +78,28 @@ type RepoRawData struct {
 	TotalBlobCount int
 }
 
+// DomainRawData is a datapoint collected by dfb after backup of a domain is completed
+// by running the restic stats command with the raw-data mode on the latest snapshot
+type DomainRawData struct {
+	// Metadata
+	ID     int
+	Group  string
+	Domain string
+	Repo   string
+
+	// Additional fields used for querying
+	GroupWithWildcard  []string
+	DomainWithWildcard []string
+	DateString         string
+	MonthString        string
+	YearString         string
+
+	// Values used for metrics
+	TotalSize      int64
+	TotalFileCount int
+	TotalBlobCount int
+}
+
 // DB is a database wrapper
 //
 // Leveraging hashicorp/go-memdb it provides features to load
@@ -99,6 +121,9 @@ func (db *DB) Load(groupName string) {
 	}
 	for _, record := range csvReadRepoRawData(statsDir + "/repo_raw_data.csv") {
 		db.InsertRecord("repo_raw_data", record)
+	}
+	for _, record := range csvReadDomainRawData(statsDir + "/domain_raw_data.csv") {
+		db.InsertRecord("domain_raw_data", record)
 	}
 }
 
@@ -270,6 +295,55 @@ func NewDB() *DB {
 							Indexes: []memdb.Indexer{
 								&memdb.StringFieldIndex{Field: "Repo"},
 								&memdb.StringFieldIndex{Field: "Group"},
+								&memdb.StringFieldIndex{Field: "YearString"},
+							},
+						},
+					},
+				},
+			},
+			"domain_raw_data": &memdb.TableSchema{
+				Name: "domain_raw_data",
+				Indexes: map[string]*memdb.IndexSchema{
+					"id": &memdb.IndexSchema{
+						Name:    "id",
+						Unique:  true,
+						Indexer: &memdb.IntFieldIndex{Field: "ID"},
+					},
+					"repo_group_domain_daily": &memdb.IndexSchema{
+						Name:   "repo_group_domain_daily",
+						Unique: false,
+						Indexer: &memdb.CompoundMultiIndex{
+							AllowMissing: false,
+							Indexes: []memdb.Indexer{
+								&memdb.StringFieldIndex{Field: "Repo"},
+								&memdb.StringSliceFieldIndex{Field: "GroupWithWildcard"},
+								&memdb.StringSliceFieldIndex{Field: "DomainWithWildcard"},
+								&memdb.StringFieldIndex{Field: "DateString"},
+							},
+						},
+					},
+					"repo_group_domain_monthly": &memdb.IndexSchema{
+						Name:   "repo_group_domain_monthly",
+						Unique: false,
+						Indexer: &memdb.CompoundMultiIndex{
+							AllowMissing: false,
+							Indexes: []memdb.Indexer{
+								&memdb.StringFieldIndex{Field: "Repo"},
+								&memdb.StringSliceFieldIndex{Field: "GroupWithWildcard"},
+								&memdb.StringSliceFieldIndex{Field: "DomainWithWildcard"},
+								&memdb.StringFieldIndex{Field: "MonthString"},
+							},
+						},
+					},
+					"repo_group_domain_yearly": &memdb.IndexSchema{
+						Name:   "repo_group_domain_yearly",
+						Unique: false,
+						Indexer: &memdb.CompoundMultiIndex{
+							AllowMissing: false,
+							Indexes: []memdb.Indexer{
+								&memdb.StringFieldIndex{Field: "Repo"},
+								&memdb.StringSliceFieldIndex{Field: "GroupWithWildcard"},
+								&memdb.StringSliceFieldIndex{Field: "DomainWithWildcard"},
 								&memdb.StringFieldIndex{Field: "YearString"},
 							},
 						},

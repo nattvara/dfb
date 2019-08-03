@@ -172,3 +172,41 @@ func csvReadRepoRawData(filename string) []*RepoRawData {
 
 	return rawData
 }
+
+// csvReadDomainRawData reads given csv file, parses and returns domain raw data records
+func csvReadDomainRawData(filename string) []*DomainRawData {
+	var rawData []*DomainRawData
+
+	it := &csvFileIterator{}
+	it.Open(filename)
+	defer it.Close()
+
+	for record := it.Next(); record != nil; record = it.Next() {
+
+		totalSize, _ := strconv.ParseInt(record[0], 10, 64)
+		totalFileCount, _ := strconv.Atoi(record[1])
+		totalBlobCount, _ := strconv.Atoi(record[2])
+		date, _ := time.Parse("2006-01-02T15:04:05Z0700", record[6])
+
+		rd := &DomainRawData{
+			TotalSize:      totalSize,
+			TotalFileCount: totalFileCount,
+			TotalBlobCount: totalBlobCount,
+
+			ID:     it.CurrentLineNumber,
+			Group:  record[3],
+			Domain: record[4],
+			Repo:   record[5],
+
+			GroupWithWildcard:  []string{record[3], AllDomains},
+			DomainWithWildcard: []string{record[4], AllDomains},
+
+			DateString:  date.Format(getDateLayoutForTimeUnit(TimeUnitDays)),
+			MonthString: date.Format(getDateLayoutForTimeUnit(TimeUnitMonths)),
+			YearString:  date.Format(getDateLayoutForTimeUnit(TimeUnitYears)),
+		}
+		rawData = append(rawData, rd)
+	}
+
+	return rawData
+}
