@@ -210,3 +210,39 @@ func csvReadDomainRawData(filename string) []*DomainRawData {
 
 	return rawData
 }
+
+// csvReadDomainRestoreSize reads given csv file, parses and returns domain restore size records
+func csvReadDomainRestoreSize(filename string) []*DomainRestoreSize {
+	var restoreSizes []*DomainRestoreSize
+
+	it := &csvFileIterator{}
+	it.Open(filename)
+	defer it.Close()
+
+	for record := it.Next(); record != nil; record = it.Next() {
+
+		totalSize, _ := strconv.ParseInt(record[0], 10, 64)
+		totalFileCount, _ := strconv.Atoi(record[1])
+		date, _ := time.Parse("2006-01-02T15:04:05Z0700", record[5])
+
+		rs := &DomainRestoreSize{
+			TotalSize:      totalSize,
+			TotalFileCount: totalFileCount,
+
+			ID:     it.CurrentLineNumber,
+			Group:  record[2],
+			Domain: record[3],
+			Repo:   record[4],
+
+			GroupWithWildcard:  []string{record[2], AllDomains},
+			DomainWithWildcard: []string{record[3], AllDomains},
+
+			DateString:  date.Format(getDateLayoutForTimeUnit(TimeUnitDays)),
+			MonthString: date.Format(getDateLayoutForTimeUnit(TimeUnitMonths)),
+			YearString:  date.Format(getDateLayoutForTimeUnit(TimeUnitYears)),
+		}
+		restoreSizes = append(restoreSizes, rs)
+	}
+
+	return restoreSizes
+}
