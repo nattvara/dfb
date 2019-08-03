@@ -38,10 +38,11 @@ brew install jq
 brew install coreutils
 ```
 
-#### Install go
+#### Install go and fyne
 
 ```bash
 brew install go
+go get fyne.io/fyne/cmd/fyne
 ```
 
 #### Download and build dfb
