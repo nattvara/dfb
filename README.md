@@ -97,8 +97,6 @@ restic -r [REPO] init
 ### Availible commands
 
 ```console
-$ dfb
-
 _________/\\\__________/\\\\\___/\\\________
  ________\/\\\________/\\\///___\/\\\________
   ________\/\\\_______/\\\_______\/\\\________
@@ -120,6 +118,7 @@ Available Commands:
   backup      Backup a group of domains to a repo.
   recover     Mount backed up versions of domains for recovery.
   fsd         Control the filesystem agent.
+  stats       Make a chart for a backup metric.
 
 Options:
   -h --help     Show this screen.
