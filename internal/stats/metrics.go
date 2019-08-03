@@ -274,7 +274,7 @@ func (m *BackupTime) Init(timeUnit string) {
 
 // GetDefaultAggregator returns the default aggregator for metric m
 func (m *BackupTime) GetDefaultAggregator() Aggregator {
-	return &Sum{}
+	return &Average{}
 }
 
 // FetchDataFromDB fetches appropriate data from DB and appends values
