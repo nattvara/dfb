@@ -14,13 +14,13 @@ const (
 
 // Metrics is a map of availible metrics
 var Metrics = map[string]Metric{
-	"snapshots-data-added":            &SnapshotsDataAdded{},
-	"snapshots-files-new-and-changed": &SnapshotsFilesNewAndChanged{},
-	"snapshots-files-processed":       &SnapshotsFilesProcessed{},
-	"backup-time":                     &BackupTime{},
-	"repo-disk-space":                 &RepoDiskSpace{},
-	"domain-disk-space":               &DomainDiskSpace{},
-	"domain-disk-space-on-restore":    &DomainDiskSpaceOnRestore{},
+	"backup-time":                  &BackupTime{},
+	"repo-disk-space":              &RepoDiskSpace{},
+	"domain-data-added":            &DomainDataAdded{},
+	"domain-disk-space":            &DomainDiskSpace{},
+	"domain-disk-space-on-restore": &DomainDiskSpaceOnRestore{},
+	"domain-files-new-and-changed": &DomainFilesNewAndChanged{},
+	"domain-files-processed":       &DomainFilesProcessed{},
 }
 
 // NewMetric returns a new metric
@@ -163,13 +163,13 @@ func (m *metricData) GetFormatter() Formatter {
 	return m.Formatter
 }
 
-// SnapshotsDataAdded is a metric of the data added by snapshots over time
-type SnapshotsDataAdded struct {
+// DomainDataAdded is a metric of the data added by snapshots of a domain over time
+type DomainDataAdded struct {
 	metricData
 }
 
 // Init initializes the metric
-func (m *SnapshotsDataAdded) Init(timeUnit string) {
+func (m *DomainDataAdded) Init(timeUnit string) {
 	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
 	m.Name = "data added"
@@ -178,7 +178,7 @@ func (m *SnapshotsDataAdded) Init(timeUnit string) {
 
 // FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
-func (m *SnapshotsDataAdded) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
+func (m *DomainDataAdded) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
 		records := iterator.QueryDB("snapshot", m, date.Value)
@@ -189,22 +189,23 @@ func (m *SnapshotsDataAdded) FetchDataFromDB(db *DB, timeUnit string, timeLength
 	}
 }
 
-// SnapshotsFilesNewAndChanged is a metric of the new and changed files for the snapshots over time
-type SnapshotsFilesNewAndChanged struct {
+// DomainFilesNewAndChanged is a metric of the new and changed files for the snapshots
+// of a domain over time
+type DomainFilesNewAndChanged struct {
 	metricData
 }
 
 // Init initializes the metric
-func (m *SnapshotsFilesNewAndChanged) Init(timeUnit string) {
+func (m *DomainFilesNewAndChanged) Init(timeUnit string) {
 	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
-	m.Name = "new files"
+	m.Name = "new and changed files"
 	m.Formatter = &AmountFormatter{}
 }
 
 // FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
-func (m *SnapshotsFilesNewAndChanged) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
+func (m *DomainFilesNewAndChanged) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
 		records := iterator.QueryDB("snapshot", m, date.Value)
@@ -215,13 +216,14 @@ func (m *SnapshotsFilesNewAndChanged) FetchDataFromDB(db *DB, timeUnit string, t
 	}
 }
 
-// SnapshotsFilesProcessed is a metric of the files processed for the snapshots over time
-type SnapshotsFilesProcessed struct {
+// DomainFilesProcessed is a metric of the files processed while taking a
+// snapshot of a domain
+type DomainFilesProcessed struct {
 	metricData
 }
 
 // Init initializes the metric
-func (m *SnapshotsFilesProcessed) Init(timeUnit string) {
+func (m *DomainFilesProcessed) Init(timeUnit string) {
 	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
 	m.Name = "files processed"
@@ -230,7 +232,7 @@ func (m *SnapshotsFilesProcessed) Init(timeUnit string) {
 
 // FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
-func (m *SnapshotsFilesProcessed) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
+func (m *DomainFilesProcessed) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
 		records := iterator.QueryDB("snapshot", m, date.Value)
