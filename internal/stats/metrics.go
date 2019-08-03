@@ -19,6 +19,7 @@ var Metrics = map[string]Metric{
 	"snapshots-files-processed":       &SnapshotsFilesProcessed{},
 	"backup-time":                     &BackupTime{},
 	"repo-disk-space":                 &RepoDiskSpace{},
+	"domain-disk-space":               &DomainDiskSpace{},
 }
 
 // NewMetric returns a new metric
@@ -302,6 +303,50 @@ func (m *RepoDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength int)
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
 		records := iterator.QueryDB("repo_raw_data", m, date.Value)
+		m.AddDate(date.Value)
+		for obj := records.Next(); obj != nil; obj = records.Next() {
+			m.AppendValues(obj, "TotalSize", iterator.CurrentOffset)
+		}
+	}
+}
+
+// DomainDiskSpace is a metric of how much space all the backups of a domain takes on disk
+type DomainDiskSpace struct {
+	metricData
+}
+
+// Init initializes the metric
+func (m *DomainDiskSpace) Init(timeUnit string) {
+	m.supportsDomains = true
+	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
+	m.Name = "disk space occupied"
+	m.Formatter = &BytesFormatter{}
+}
+
+// SetTitle sets the title of a DomainDiskSpace metric m from given input data
+func (m *DomainDiskSpace) SetTitle(name string, repo string, group string, domain string, aggregator string) {
+	var d string
+	if domain == AllDomains {
+		d = "all domains"
+	} else {
+		d = domain
+	}
+	m.Title = fmt.Sprintf(
+		"%s %s by %s in group %s of repo %s",
+		aggregator,
+		m.Name,
+		d,
+		group,
+		repo,
+	)
+}
+
+// FetchDataFromDB fetches appropriate data from DB and appends values
+// for given timeUnit and timeLength
+func (m *DomainDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
+	iterator := NewDateIterator(db, timeUnit, timeLength)
+	for date := iterator.Next(); date.Valid; date = iterator.Next() {
+		records := iterator.QueryDB("domain_raw_data", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "TotalSize", iterator.CurrentOffset)
