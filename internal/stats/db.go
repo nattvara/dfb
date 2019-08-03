@@ -69,28 +69,19 @@ type DB struct {
 func (db *DB) Load(groupName string) {
 	statsDir := fmt.Sprintf("%s/%s/stats", paths.DFB(), groupName)
 
-	db.InsertSnapshotSummaries(csvReadSummaries(statsDir + "/snapshots.csv"))
-	db.InsertRepoBackupTimes(csvReadRepoBackupTime(statsDir + "/repo_time_took.csv"))
-}
-
-// InsertSnapshotSummaries inserts snapshot summaries into memdb instance
-func (db *DB) InsertSnapshotSummaries(summaries []*SnapshotSummary) {
-	txn := db.memdb.Txn(true)
-	for _, snapshot := range summaries {
-		if err := txn.Insert("snapshot", snapshot); err != nil {
-			panic(err)
-		}
+	for _, record := range csvReadSummaries(statsDir + "/snapshots.csv") {
+		db.InsertRecord("snapshot", record)
 	}
-	txn.Commit()
+	for _, record := range csvReadRepoBackupTime(statsDir + "/repo_time_took.csv") {
+		db.InsertRecord("repo_backup_times", record)
+	}
 }
 
-// InsertRepoBackupTimes inserts backup times into memdb instance
-func (db *DB) InsertRepoBackupTimes(backupTimes []*RepoBackupTime) {
+// InsertRecord will insert a record in given table in memdb instance
+func (db *DB) InsertRecord(table string, record interface{}) {
 	txn := db.memdb.Txn(true)
-	for _, backup := range backupTimes {
-		if err := txn.Insert("repo_backup_times", backup); err != nil {
-			panic(err)
-		}
+	if err := txn.Insert(table, record); err != nil {
+		panic(err)
 	}
 	txn.Commit()
 }
