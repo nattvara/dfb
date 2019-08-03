@@ -4,8 +4,10 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -15,6 +17,7 @@ type csvFileIterator struct {
 	file              *os.File
 	reader            *csv.Reader
 	CurrentLineNumber int
+	malformedLines    []int
 }
 
 // Open opens csv file at given filename for csvFileIterator it
@@ -34,7 +37,35 @@ func (it *csvFileIterator) Open(filename string) {
 
 // Close closes file descriptor used for reading csv by csvFileIterator it
 func (it *csvFileIterator) Close() {
+	if len(it.malformedLines) > 0 {
+		it.deleteMalformedLines()
+	}
 	it.file.Close()
+}
+
+// deleteMalformedLines reads csv file and deletes the lines from the file, that
+// were found to be malformed, during iteration with the Next method
+func (it *csvFileIterator) deleteMalformedLines() {
+	data, err := ioutil.ReadFile(it.filename)
+	if err != nil {
+		panic(err)
+	}
+
+	lines := strings.Split(string(data), "\n")
+	var out []string
+
+outer:
+	for i, line := range lines {
+		for _, malformed := range it.malformedLines {
+			if i == malformed {
+				continue outer
+			}
+		}
+		out = append(out, line)
+	}
+
+	cleaned := strings.Join(out, "\n")
+	ioutil.WriteFile(it.filename, []byte(cleaned), 0644)
 }
 
 // Next reads and returns the next record from opened csv file by csvFileIterator it
@@ -48,6 +79,7 @@ func (it *csvFileIterator) Next() []string {
 	if err != nil {
 		if err, ok := err.(*csv.ParseError); ok && err.Err == csv.ErrFieldCount {
 			fmt.Printf("%s parse error at line %v\n", it.filename, it.CurrentLineNumber)
+			it.malformedLines = append(it.malformedLines, it.CurrentLineNumber)
 			return it.Next()
 		}
 	}
