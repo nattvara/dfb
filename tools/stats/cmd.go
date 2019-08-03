@@ -35,21 +35,6 @@ var cmd = &cobra.Command{
 		repoName := args[1]
 		metricName := args[2]
 
-		if shouldListMetrics {
-			listMetrics()
-			return
-		}
-
-		if shouldListTimeUnits {
-			listTimeUnits()
-			return
-		}
-
-		if shouldListAggregators {
-			listAggregators()
-			return
-		}
-
 		if domainName == "" {
 			domainName = stats.AllDomains
 		}
@@ -85,6 +70,21 @@ func main() {
 	cmd.Flags().BoolVarP(&shouldListTimeUnits, "list-time-units", "", false, "list availiable time units")
 	cmd.Flags().BoolVarP(&shouldListAggregators, "list-aggregators", "", false, "list availiable aggregators")
 	cmd.Execute()
+
+	if shouldListMetrics {
+		listMetrics()
+		return
+	}
+
+	if shouldListTimeUnits {
+		listTimeUnits()
+		return
+	}
+
+	if shouldListAggregators {
+		listAggregators()
+		return
+	}
 }
 
 func listMetrics() {
