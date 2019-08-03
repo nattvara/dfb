@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/nattvara/dfb/internal/stats"
 
@@ -87,8 +88,15 @@ func main() {
 }
 
 func listMetrics() {
-	fmt.Println("availible metrics are:")
+	var metrics []string
+
 	for name := range stats.Metrics {
+		metrics = append(metrics, name)
+	}
+
+	sort.Strings(metrics)
+	fmt.Println("availible metrics are:")
+	for _, name := range metrics {
 		fmt.Printf("  %s\n", name)
 	}
 }
