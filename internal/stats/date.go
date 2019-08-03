@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"log"
 	"strings"
 	"time"
 
@@ -37,7 +36,7 @@ func getDateLayoutForTimeUnit(timeUnit string) string {
 	case TimeUnitYears:
 		layout = "2006"
 	default:
-		log.Fatal("unsupported timeUnit: " + timeUnit)
+		panic("unsupported timeUnit: " + timeUnit)
 	}
 	return layout
 }
@@ -106,7 +105,7 @@ func (it *DateIterator) GetRecordsForDate(table string, metric Metric, date time
 		args...,
 	)
 	if err != nil {
-		log.Fatal("failed to fetch data from db for metric", err)
+		panic("failed to fetch data from db for metric. " + err.Error())
 	}
 
 	return records
@@ -122,7 +121,7 @@ func (it *DateIterator) incrementDate(amount int) {
 	case TimeUnitYears:
 		it.currentDate.Value = it.currentDate.Value.AddDate(amount, 0, 0)
 	default:
-		log.Fatal("unsupported time unit: " + it.TimeUnit)
+		panic("unsupported time unit: " + it.TimeUnit)
 	}
 }
 
@@ -137,6 +136,6 @@ func (it *DateIterator) decrementDate(amount int) {
 	case TimeUnitYears:
 		it.currentDate.Value = it.currentDate.Value.AddDate(amount, 0, 0)
 	default:
-		log.Fatal("unsupported time unit: " + it.TimeUnit)
+		panic("unsupported time unit: " + it.TimeUnit)
 	}
 }

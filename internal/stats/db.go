@@ -2,7 +2,6 @@ package stats
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/hashicorp/go-memdb"
@@ -175,7 +174,7 @@ func (db *DB) GetIndexFromTimeUnit(timeUnit string, includeDomain bool) string {
 	case TimeUnitYears:
 		index += "_yearly"
 	default:
-		log.Fatal("unsupported timeUnit: " + timeUnit)
+		panic("unsupported timeUnit: " + timeUnit)
 	}
 	return index
 }

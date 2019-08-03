@@ -1,8 +1,8 @@
 package stats
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"reflect"
 	"time"
 )
@@ -24,15 +24,15 @@ var Metrics = map[string]Metric{
 }
 
 // NewMetric returns a new metric
-func NewMetric(name string, repo string, group string, domain string, timeUnit string, aggregator string) Metric {
+func NewMetric(name string, repo string, group string, domain string, timeUnit string, aggregator string) (Metric, error) {
 	if _, ok := Metrics[name]; !ok {
-		log.Fatal("unknown metric " + name)
+		return nil, errors.New("unknown metric " + name)
 	}
 	m := Metrics[name]
 	m.Init(timeUnit)
 	m.SetTitle(name, repo, group, domain, aggregator)
 	m.SetMetadata(name, repo, group, domain, aggregator)
-	return m
+	return m, nil
 }
 
 // Metric is a type that provides a FetchDataFromDB method and methods for
@@ -100,7 +100,7 @@ func (m *metricData) SetMetadata(name string, repo string, group string, domain 
 // GetMetadata returns value for requested metadata property from metricData m
 func (m *metricData) GetMetadata(property string) string {
 	if _, ok := m.Meta[property]; !ok {
-		log.Fatal("unknown metadata property " + property)
+		panic("unknown metadata property " + property)
 	}
 	return m.Meta[property]
 }

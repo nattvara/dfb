@@ -2,7 +2,7 @@ package stats
 
 import (
 	"bytes"
-	"log"
+	"errors"
 	"os"
 
 	"github.com/wcharczuk/go-chart"
@@ -17,7 +17,7 @@ type LineChart struct {
 }
 
 // WriteToFile writes LineChart c to file at given path
-func (c *LineChart) WriteToFile(path string) {
+func (c *LineChart) WriteToFile(path string) error {
 	graph := c.createGraph()
 
 	buffer := bytes.NewBuffer([]byte{})
@@ -29,10 +29,11 @@ func (c *LineChart) WriteToFile(path string) {
 	file, err := os.Create(path)
 	defer file.Close()
 	if err != nil {
-		log.Fatal("failed to open file, ", err)
+		return errors.New("failed to open file. " + err.Error())
 	}
 
 	buffer.WriteTo(file)
+	return nil
 }
 
 // createGraph creates a graph for LineChart c

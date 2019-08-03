@@ -1,8 +1,6 @@
 package stats
 
-import (
-	"log"
-)
+import "errors"
 
 // Aggregators is a map of availible aggregators
 var Aggregators = map[string]Aggregator{
@@ -18,12 +16,12 @@ type Aggregator interface {
 }
 
 // NewAggregator returns an aggregator that matches string name
-func NewAggregator(name string) Aggregator {
+func NewAggregator(name string) (Aggregator, error) {
 	if _, ok := Aggregators[name]; !ok {
-		log.Fatal("unknown aggregator " + name)
+		return nil, errors.New("unknown aggregator " + name)
 	}
 	a := Aggregators[name]
-	return a
+	return a, nil
 }
 
 // Sum is an aggregator that sums the values provided and appends it to output

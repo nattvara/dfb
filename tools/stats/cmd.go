@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/nattvara/dfb/internal/stats"
@@ -35,6 +36,10 @@ var cmd = &cobra.Command{
 		repoName := args[1]
 		metricName := args[2]
 
+		var metric Metric
+		var aggregator stats.Aggregator
+		var err error
+
 		if domainName == "" {
 			domainName = stats.AllDomains
 		}
@@ -42,21 +47,35 @@ var cmd = &cobra.Command{
 		db := stats.NewDB()
 		db.Load(groupName)
 
-		metric := stats.NewMetric(
+		if metric, err = stats.NewMetric(
 			metricName,
 			repoName,
 			groupName,
 			domainName,
 			timeUnit,
 			aggregatorName,
-		)
+		); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
 		metric.FetchDataFromDB(db, timeUnit, timeLength)
+
+		if aggregator, err = stats.NewAggregator(aggregatorName); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
 		chart := stats.LineChart{
 			Metric:     metric,
-			Aggregator: stats.NewAggregator(aggregatorName),
+			Aggregator: aggregator,
 		}
-		chart.WriteToFile(outputPath)
+
+		err = chart.WriteToFile(outputPath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 
