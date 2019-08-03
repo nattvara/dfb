@@ -54,8 +54,10 @@ func (a *Accumulate) Aggregate(output []float64, values []float64) []float64 {
 	return append(output, sum)
 }
 
+// Average is an aggregator that averages the values provided and appends it to output
 type Average struct{}
 
+// Aggregate aggregates values provided into output
 func (a *Average) Aggregate(output []float64, values []float64) []float64 {
 	var sum float64
 	var avg float64
