@@ -20,6 +20,7 @@ var Metrics = map[string]Metric{
 	"backup-time":                     &BackupTime{},
 	"repo-disk-space":                 &RepoDiskSpace{},
 	"domain-disk-space":               &DomainDiskSpace{},
+	"domain-disk-space-on-restore":    &DomainDiskSpaceOnRestore{},
 }
 
 // NewMetric returns a new metric
@@ -344,6 +345,32 @@ func (m *DomainDiskSpace) SetTitle(name string, repo string, group string, domai
 // FetchDataFromDB fetches appropriate data from DB and appends values
 // for given timeUnit and timeLength
 func (m *DomainDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
+	iterator := NewDateIterator(db, timeUnit, timeLength)
+	for date := iterator.Next(); date.Valid; date = iterator.Next() {
+		records := iterator.QueryDB("domain_raw_data", m, date.Value)
+		m.AddDate(date.Value)
+		for obj := records.Next(); obj != nil; obj = records.Next() {
+			m.AppendValues(obj, "TotalSize", iterator.CurrentOffset)
+		}
+	}
+}
+
+// DomainDiskSpaceOnRestore is a metric of how much disk space a domain would take on restore
+type DomainDiskSpaceOnRestore struct {
+	metricData
+}
+
+// Init initializes the metric
+func (m *DomainDiskSpaceOnRestore) Init(timeUnit string) {
+	m.supportsDomains = true
+	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
+	m.Name = "size of restore"
+	m.Formatter = &BytesFormatter{}
+}
+
+// FetchDataFromDB fetches appropriate data from DB and appends values
+// for given timeUnit and timeLength
+func (m *DomainDiskSpaceOnRestore) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
 		records := iterator.QueryDB("domain_raw_data", m, date.Value)
