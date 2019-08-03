@@ -181,7 +181,7 @@ func (m *DomainDataAdded) Init(timeUnit string) {
 func (m *DomainDataAdded) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("snapshot", m, date.Value)
+		records := iterator.GetRecordsForDate("snapshot", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "DataAdded", iterator.CurrentOffset)
@@ -208,7 +208,7 @@ func (m *DomainFilesNewAndChanged) Init(timeUnit string) {
 func (m *DomainFilesNewAndChanged) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("snapshot", m, date.Value)
+		records := iterator.GetRecordsForDate("snapshot", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendMultipleValues(obj, []string{"FilesNew", "FilesChanged"}, iterator.CurrentOffset)
@@ -235,7 +235,7 @@ func (m *DomainFilesProcessed) Init(timeUnit string) {
 func (m *DomainFilesProcessed) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("snapshot", m, date.Value)
+		records := iterator.GetRecordsForDate("snapshot", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "TotalFilesProcessed", iterator.CurrentOffset)
@@ -261,7 +261,7 @@ func (m *BackupTime) Init(timeUnit string) {
 func (m *BackupTime) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("repo_backup_times", m, date.Value)
+		records := iterator.GetRecordsForDate("repo_backup_times", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "Took", iterator.CurrentOffset)
@@ -305,7 +305,7 @@ func (m *RepoDiskSpace) SetTitle(name string, repo string, group string, domain 
 func (m *RepoDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("repo_raw_data", m, date.Value)
+		records := iterator.GetRecordsForDate("repo_raw_data", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "TotalSize", iterator.CurrentOffset)
@@ -349,7 +349,7 @@ func (m *DomainDiskSpace) SetTitle(name string, repo string, group string, domai
 func (m *DomainDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("domain_raw_data", m, date.Value)
+		records := iterator.GetRecordsForDate("domain_raw_data", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "TotalSize", iterator.CurrentOffset)
@@ -375,7 +375,7 @@ func (m *DomainDiskSpaceOnRestore) Init(timeUnit string) {
 func (m *DomainDiskSpaceOnRestore) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 	iterator := NewDateIterator(db, timeUnit, timeLength)
 	for date := iterator.Next(); date.Valid; date = iterator.Next() {
-		records := iterator.QueryDB("domain_raw_data", m, date.Value)
+		records := iterator.GetRecordsForDate("domain_raw_data", m, date.Value)
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "TotalSize", iterator.CurrentOffset)

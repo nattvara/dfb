@@ -84,8 +84,9 @@ func (it *DateIterator) Next() *Date {
 	return it.currentDate
 }
 
-// QueryDB queries the DB of DateIterator it for values in table matching date and metric metadata
-func (it *DateIterator) QueryDB(table string, metric Metric, date time.Time) memdb.ResultIterator {
+// GetRecordsForDate queries the DB of DateIterator it for values in
+// provided table matching date and metric metadata and returns matching records
+func (it *DateIterator) GetRecordsForDate(table string, metric Metric, date time.Time) memdb.ResultIterator {
 	layout := getDateLayoutForTimeUnit(it.TimeUnit)
 
 	txn := it.db.memdb.Txn(false)
