@@ -18,6 +18,7 @@ var Metrics = map[string]Metric{
 	"snapshots-files-new-and-changed": &SnapshotsFilesNewAndChanged{},
 	"snapshots-files-processed":       &SnapshotsFilesProcessed{},
 	"backup-time":                     &BackupTime{},
+	"repo-disk-space":                 &RepoDiskSpace{},
 }
 
 // NewMetric returns a new metric
@@ -120,8 +121,10 @@ func (m *metricData) AppendValues(obj interface{}, field string, date int) {
 		value = fv.Float()
 	case "int":
 		value = float64(fv.Int())
+	case "int64":
+		value = float64(fv.Int())
 	default:
-		panic("unkown field value " + fv.Kind().String())
+		panic("cannot append value, unkown type")
 	}
 
 	m.Data[date] = append(m.Data[date], value)
@@ -258,6 +261,32 @@ func (m *BackupTime) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
 		m.AddDate(date.Value)
 		for obj := records.Next(); obj != nil; obj = records.Next() {
 			m.AppendValues(obj, "Took", iterator.CurrentOffset)
+		}
+	}
+}
+
+// RepoDiskSpace is a metric of how much space a repo takes on disk
+type RepoDiskSpace struct {
+	metricData
+}
+
+// Init initializes the metric
+func (m *RepoDiskSpace) Init(timeUnit string) {
+	m.supportsDomains = false
+	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
+	m.Name = "disk space occupied"
+	m.Formatter = &BytesFormatter{}
+}
+
+// FetchDataFromDB fetches appropriate data from DB and appends values
+// for given timeUnit and timeLength
+func (m *RepoDiskSpace) FetchDataFromDB(db *DB, timeUnit string, timeLength int) {
+	iterator := NewDateIterator(db, timeUnit, timeLength)
+	for date := iterator.Next(); date.Valid; date = iterator.Next() {
+		records := iterator.QueryDB("repo_raw_data", m, date.Value)
+		m.AddDate(date.Value)
+		for obj := records.Next(); obj != nil; obj = records.Next() {
+			m.AppendValues(obj, "TotalSize", iterator.CurrentOffset)
 		}
 	}
 }
