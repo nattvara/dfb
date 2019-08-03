@@ -5,6 +5,8 @@ import (
 	"errors"
 	"os"
 
+	"github.com/nattvara/dfb/internal/fonts"
+
 	"github.com/wcharczuk/go-chart"
 	"github.com/wcharczuk/go-chart/drawing"
 	"github.com/wcharczuk/go-chart/util"
@@ -38,6 +40,8 @@ func (c *LineChart) WriteToFile(path string) error {
 
 // createGraph creates a graph for LineChart c
 func (c *LineChart) createGraph() chart.Chart {
+	latoRegular := fonts.GetFont(fonts.LatoRegular)
+	latoBlack := fonts.GetFont(fonts.LatoBlack)
 	return chart.Chart{
 		Width:  1024,
 		Height: 1024,
@@ -47,6 +51,8 @@ func (c *LineChart) createGraph() chart.Chart {
 				Top: 50,
 			},
 			Show:      true,
+			Font:      latoBlack,
+			FontSize:  20,
 			FontColor: chart.ColorWhite,
 		},
 		Background: chart.Style{
@@ -64,6 +70,7 @@ func (c *LineChart) createGraph() chart.Chart {
 		XAxis: chart.XAxis{
 			Style: chart.Style{
 				Show:        true,
+				Font:        latoRegular,
 				FontColor:   drawing.ColorFromHex("fff"),
 				FontSize:    18,
 				StrokeWidth: 3,
@@ -83,6 +90,7 @@ func (c *LineChart) createGraph() chart.Chart {
 		YAxis: chart.YAxis{
 			Style: chart.Style{
 				Show:        true,
+				Font:        latoRegular,
 				FontColor:   drawing.ColorFromHex("fff"),
 				FontSize:    18,
 				StrokeWidth: 3,
