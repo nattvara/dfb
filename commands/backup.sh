@@ -135,7 +135,7 @@ backup_domain() {
 
     snapshots_csv="$STATS_PATH/snapshots.csv"
     domain_restore_size_csv="$STATS_PATH/domain_restore_size.csv"
-    domain_raw_data_csv="$STATS_PATH/domain_raw_data_csv.csv"
+    domain_raw_data_csv="$STATS_PATH/domain_raw_data.csv"
     if [ ! -d "$STATS_PATH" ]; then
         mkdir "$STATS_PATH"
     fi
