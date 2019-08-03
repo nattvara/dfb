@@ -73,7 +73,7 @@ func (m *metricData) SetTitle(name string, repo string, group string, domain str
 		d = domain
 	}
 	m.Title = fmt.Sprintf(
-		"%s %s to %s in group %s of repo %s",
+		"%s %s %s in group %s of repo %s",
 		aggregator,
 		m.Name,
 		d,
@@ -172,7 +172,7 @@ type DomainDataAdded struct {
 func (m *DomainDataAdded) Init(timeUnit string) {
 	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
-	m.Name = "data added"
+	m.Name = "data added to"
 	m.Formatter = &BytesFormatter{}
 }
 
@@ -199,7 +199,7 @@ type DomainFilesNewAndChanged struct {
 func (m *DomainFilesNewAndChanged) Init(timeUnit string) {
 	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
-	m.Name = "new and changed files"
+	m.Name = "new and changed files in"
 	m.Formatter = &AmountFormatter{}
 }
 
@@ -226,7 +226,7 @@ type DomainFilesProcessed struct {
 func (m *DomainFilesProcessed) Init(timeUnit string) {
 	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
-	m.Name = "files processed"
+	m.Name = "files processed when backing up"
 	m.Formatter = &AmountFormatter{}
 }
 
@@ -252,7 +252,7 @@ type BackupTime struct {
 func (m *BackupTime) Init(timeUnit string) {
 	m.supportsDomains = false
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
-	m.Name = "backup time"
+	m.Name = "backup time of"
 	m.Formatter = &TimeFormatter{}
 }
 
@@ -278,26 +278,8 @@ type RepoDiskSpace struct {
 func (m *RepoDiskSpace) Init(timeUnit string) {
 	m.supportsDomains = false
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
-	m.Name = "disk space occupied"
+	m.Name = "disk space occupied by"
 	m.Formatter = &BytesFormatter{}
-}
-
-// SetTitle sets the title of a RepoDiskSpace metric m from given input data
-func (m *RepoDiskSpace) SetTitle(name string, repo string, group string, domain string, aggregator string) {
-	var d string
-	if domain == AllDomains {
-		d = "all domains"
-	} else {
-		d = domain
-	}
-	m.Title = fmt.Sprintf(
-		"%s %s by %s in group %s of repo %s",
-		aggregator,
-		m.Name,
-		d,
-		group,
-		repo,
-	)
 }
 
 // FetchDataFromDB fetches appropriate data from DB and appends values
@@ -322,26 +304,8 @@ type DomainDiskSpace struct {
 func (m *DomainDiskSpace) Init(timeUnit string) {
 	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
-	m.Name = "disk space occupied"
+	m.Name = "disk space occupied by"
 	m.Formatter = &BytesFormatter{}
-}
-
-// SetTitle sets the title of a DomainDiskSpace metric m from given input data
-func (m *DomainDiskSpace) SetTitle(name string, repo string, group string, domain string, aggregator string) {
-	var d string
-	if domain == AllDomains {
-		d = "all domains"
-	} else {
-		d = domain
-	}
-	m.Title = fmt.Sprintf(
-		"%s %s by %s in group %s of repo %s",
-		aggregator,
-		m.Name,
-		d,
-		group,
-		repo,
-	)
 }
 
 // FetchDataFromDB fetches appropriate data from DB and appends values
@@ -366,7 +330,7 @@ type DomainDiskSpaceOnRestore struct {
 func (m *DomainDiskSpaceOnRestore) Init(timeUnit string) {
 	m.supportsDomains = true
 	m.DateLayout = getDateLayoutForTimeUnit(timeUnit)
-	m.Name = "size of restore"
+	m.Name = "size of the restore of"
 	m.Formatter = &BytesFormatter{}
 }
 
