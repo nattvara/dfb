@@ -36,7 +36,7 @@ var cmd = &cobra.Command{
 		repoName := args[1]
 		metricName := args[2]
 
-		var metric Metric
+		var metric stats.Metric
 		var aggregator stats.Aggregator
 		var err error
 
