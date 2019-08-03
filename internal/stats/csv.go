@@ -138,3 +138,37 @@ func csvReadRepoBackupTime(filename string) []*RepoBackupTime {
 
 	return backupTimes
 }
+
+// csvReadRepoRawData reads given csv file, parses and returns repo raw data records
+func csvReadRepoRawData(filename string) []*RepoRawData {
+	var rawData []*RepoRawData
+
+	it := &csvFileIterator{}
+	it.Open(filename)
+	defer it.Close()
+
+	for record := it.Next(); record != nil; record = it.Next() {
+
+		totalSize, _ := strconv.ParseInt(record[0], 10, 64)
+		totalFileCount, _ := strconv.Atoi(record[1])
+		totalBlobCount, _ := strconv.Atoi(record[2])
+		date, _ := time.Parse("2006-01-02T15:04:05Z0700", record[5])
+
+		rd := &RepoRawData{
+			TotalSize:      totalSize,
+			TotalFileCount: totalFileCount,
+			TotalBlobCount: totalBlobCount,
+
+			ID:    it.CurrentLineNumber,
+			Group: record[3],
+			Repo:  record[4],
+
+			DateString:  date.Format(getDateLayoutForTimeUnit(TimeUnitDays)),
+			MonthString: date.Format(getDateLayoutForTimeUnit(TimeUnitMonths)),
+			YearString:  date.Format(getDateLayoutForTimeUnit(TimeUnitYears)),
+		}
+		rawData = append(rawData, rd)
+	}
+
+	return rawData
+}

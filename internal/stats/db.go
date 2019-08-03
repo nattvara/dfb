@@ -40,6 +40,8 @@ type SnapshotSummary struct {
 	TotalDuration       float64
 }
 
+// RepoBackupTime is a datapoint collected by dfb during backup by measuring the time
+// from the backup of a group was started, until the last domain was completed
 type RepoBackupTime struct {
 	// Metadata
 	ID    int
@@ -54,6 +56,26 @@ type RepoBackupTime struct {
 
 	// Values used for metrics
 	Took float64
+}
+
+// RepoRawData is a datapoint collected by dfb after backup of a group is completed
+// by running the restic stats command with the raw-data mode
+type RepoRawData struct {
+	// Metadata
+	ID    int
+	Group string
+	Repo  string
+
+	// Additional fields used for querying
+	GroupWithWildcard []string
+	DateString        string
+	MonthString       string
+	YearString        string
+
+	// Values used for metrics
+	TotalSize      int64
+	TotalFileCount int
+	TotalBlobCount int
 }
 
 // DB is a database wrapper
@@ -74,6 +96,9 @@ func (db *DB) Load(groupName string) {
 	}
 	for _, record := range csvReadRepoBackupTime(statsDir + "/repo_time_took.csv") {
 		db.InsertRecord("repo_backup_times", record)
+	}
+	for _, record := range csvReadRepoRawData(statsDir + "/repo_raw_data.csv") {
+		db.InsertRecord("repo_raw_data", record)
 	}
 }
 
@@ -161,6 +186,52 @@ func NewDB() *DB {
 			},
 			"repo_backup_times": &memdb.TableSchema{
 				Name: "repo_backup_times",
+				Indexes: map[string]*memdb.IndexSchema{
+					"id": &memdb.IndexSchema{
+						Name:    "id",
+						Unique:  true,
+						Indexer: &memdb.IntFieldIndex{Field: "ID"},
+					},
+					"repo_group_daily": &memdb.IndexSchema{
+						Name:   "repo_group_daily",
+						Unique: false,
+						Indexer: &memdb.CompoundMultiIndex{
+							AllowMissing: false,
+							Indexes: []memdb.Indexer{
+								&memdb.StringFieldIndex{Field: "Repo"},
+								&memdb.StringFieldIndex{Field: "Group"},
+								&memdb.StringFieldIndex{Field: "DateString"},
+							},
+						},
+					},
+					"repo_group_monthly": &memdb.IndexSchema{
+						Name:   "repo_group_monthly",
+						Unique: false,
+						Indexer: &memdb.CompoundMultiIndex{
+							AllowMissing: false,
+							Indexes: []memdb.Indexer{
+								&memdb.StringFieldIndex{Field: "Repo"},
+								&memdb.StringFieldIndex{Field: "Group"},
+								&memdb.StringFieldIndex{Field: "MonthString"},
+							},
+						},
+					},
+					"repo_group_yearly": &memdb.IndexSchema{
+						Name:   "repo_group_yearly",
+						Unique: false,
+						Indexer: &memdb.CompoundMultiIndex{
+							AllowMissing: false,
+							Indexes: []memdb.Indexer{
+								&memdb.StringFieldIndex{Field: "Repo"},
+								&memdb.StringFieldIndex{Field: "Group"},
+								&memdb.StringFieldIndex{Field: "YearString"},
+							},
+						},
+					},
+				},
+			},
+			"repo_raw_data": &memdb.TableSchema{
+				Name: "repo_raw_data",
 				Indexes: map[string]*memdb.IndexSchema{
 					"id": &memdb.IndexSchema{
 						Name:    "id",
