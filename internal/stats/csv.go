@@ -2,8 +2,8 @@ package stats
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"time"
@@ -25,7 +25,7 @@ func (it *csvFileIterator) Open(filename string) {
 	it.file, err = os.Open(filename)
 
 	if err != nil {
-		log.Fatal("failed to open csv file ", err)
+		panic("failed to open csv file. " + err.Error())
 	}
 
 	it.reader = csv.NewReader(it.file)
@@ -47,7 +47,7 @@ func (it *csvFileIterator) Next() []string {
 
 	if err != nil {
 		if err, ok := err.(*csv.ParseError); ok && err.Err == csv.ErrFieldCount {
-			log.Printf("%s parse error at line %v\n", it.filename, it.CurrentLineNumber)
+			fmt.Printf("%s parse error at line %v\n", it.filename, it.CurrentLineNumber)
 			return it.Next()
 		}
 	}
