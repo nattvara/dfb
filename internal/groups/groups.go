@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 
-	d "dfb/src/internal/domains"
-	"dfb/src/internal/paths"
+	d "github.com/nattvara/dfb/internal/domains"
+	"github.com/nattvara/dfb/internal/paths"
 )
 
 // FetchGroups reads and returns the groups stored on disk in dfp path

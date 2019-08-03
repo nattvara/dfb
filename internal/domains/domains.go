@@ -1,8 +1,6 @@
 package domains
 
 import (
-	"dfb/src/internal/paths"
-
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,6 +8,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/nattvara/dfb/internal/paths"
 )
 
 // Domain is a directory a directory to backup

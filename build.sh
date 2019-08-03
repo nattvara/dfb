@@ -13,19 +13,21 @@ fi
 
 touch $OUT
 echo "#!/usr/bin/env bash" > $OUT
-cat src/main.sh >> $OUT && printf "\n" >> $OUT
-cat src/commands/groups.sh >> $OUT && printf "\n" >> $OUT
-cat src/commands/domains.sh >> $OUT && printf "\n" >> $OUT
-cat src/commands/backup.sh >> $OUT && printf "\n" >> $OUT
-cat src/commands/recover.sh >> $OUT && printf "\n" >> $OUT
-cat src/commands/fsd.sh >> $OUT && printf "\n" >> $OUT
-cat src/helpers/password.sh >> $OUT && printf "\n" >> $OUT
-cat src/helpers/validation.sh >> $OUT && printf "\n" >> $OUT
+cat main.sh >> $OUT && printf "\n" >> $OUT
+cat commands/groups.sh >> $OUT && printf "\n" >> $OUT
+cat commands/domains.sh >> $OUT && printf "\n" >> $OUT
+cat commands/backup.sh >> $OUT && printf "\n" >> $OUT
+cat commands/recover.sh >> $OUT && printf "\n" >> $OUT
+cat commands/stats.sh >> $OUT && printf "\n" >> $OUT
+cat commands/fsd.sh >> $OUT && printf "\n" >> $OUT
+cat helpers/password.sh >> $OUT && printf "\n" >> $OUT
+cat helpers/validation.sh >> $OUT && printf "\n" >> $OUT
 
 echo 'main "$@"' >> $OUT
 
 chmod +x $OUT
 
-go build -o ./build/dfb-progress-parser -i ./src/tools/progress-parser.go
-go build -o ./build/dfb-progress-parser-gui -i ./src/tools/progress-parser-gui.go
-go build -o ./build/dfb-fsd -i ./src/agents/fsd.go
+go build -o ./build/dfb-progress-parser -i ./tools/progress-parser/cmd.go
+go build -o ./build/dfb-progress-parser-gui -i ./tools/progress-parser-gui/cmd.go
+go build -o ./build/dfb-stats -i ./tools/stats/cmd.go
+go build -o ./build/dfb-fsd -i ./agents/fsd.go

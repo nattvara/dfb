@@ -30,31 +30,25 @@ brew tap homebrew/cask
 brew cask install osxfuse
 ```
 
-#### Install GNU Grep
+#### Install GNU Grep, jq and coreutils
 
 ```bash
 brew install grep
+brew install jq
+brew install coreutils
 ```
 
-#### Install go and dep
+#### Install go
 
 ```bash
 brew install go
-brew install dep
 ```
 
-#### Download and build dfb and dependencies
+#### Download and build dfb
 
 ```bash
 git clone https://github.com/nattvara/dfb.git
 cd dfb
-
-if [ ! -L "$GOPATH/src/dfb" ]; then ln -s "$(pwd)" "$GOPATH/src/dfb"; else echo "already exists"; fi
-
-cd "$GOPATH/src/dfb"
-
-go get fyne.io/fyne
-dep ensure
 
 ./build.sh
 ```

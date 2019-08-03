@@ -1,10 +1,10 @@
 package domains
 
 import (
-	"dfb/src/internal/paths"
-
 	"log"
 	"os"
+
+	"github.com/nattvara/dfb/internal/paths"
 )
 
 // Symlink is a symbolik link to domains real content, not all domains
