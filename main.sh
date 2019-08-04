@@ -106,13 +106,28 @@ verify_env() {
         exit 1
     fi
 
+    if [ "$(command -v terminal-notifier)" == "" ]; then
+        echo "terminal-notifier is not installed, run: brew install terminal-notifier"
+        exit 1
+    fi
+
     if [ "$(command -v dfb-progress-parser)" == "" ]; then
-        echo "dfb-progress-parser, view installation instructions in README.md that was distributed with this software"
+        echo "dfb-progress-parser is not installed, view installation instructions in README.md that was distributed with this software"
         exit 1
     fi
 
     if [ "$(command -v dfb-progress-parser-gui)" == "" ]; then
-        echo "dfb-progress-parser-gui, view installation instructions in README.md that was distributed with this software"
+        echo "dfb-progress-parser-gui is not installed, view installation instructions in README.md that was distributed with this software"
+        exit 1
+    fi
+
+    if [ "$(command -v dfb-fsd)" == "" ]; then
+        echo "dfb-fsd is not installed, view installation instructions in README.md that was distributed with this software"
+        exit 1
+    fi
+
+    if [ "$(command -v dfb-stats)" == "" ]; then
+        echo "dfb-stats is not installed, view installation instructions in README.md that was distributed with this software"
         exit 1
     fi
 
