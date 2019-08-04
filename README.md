@@ -30,12 +30,13 @@ brew tap homebrew/cask
 brew cask install osxfuse
 ```
 
-#### Install GNU Grep, jq and coreutils
+#### Install dependencies
 
 ```bash
 brew install grep
 brew install jq
 brew install coreutils
+brew install terminal-notifier
 ```
 
 #### Install go and fyne
