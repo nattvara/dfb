@@ -173,6 +173,7 @@ backup_domain() {
         --exclude-file /tmp/dfb_exclusions \
         --verbose \
         --json \
+        2>&1 \
         | tee >( \
             ggrep "summary" \
             | jq -r 'select(.message_type=="summary") | [.[]] | @csv' \
