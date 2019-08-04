@@ -66,7 +66,7 @@ func (f *TimeFormatter) Format(value float64) string {
 	} else if value < 60*60 {
 		value = value / float64(60)
 		unit = "min"
-	} else if value >= 60*60*60 {
+	} else {
 		value = value / float64(60*60)
 		unit = "h"
 	}
