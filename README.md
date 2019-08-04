@@ -114,7 +114,7 @@ $ dfb groups add-repo demo
 
 Adding domains to a group for backup is done with the `domains` command.
 
-```console
+```bash
 dfb domains add demo ~/demo-some-project
 dfb domains add demo ~/demo-some-other-project
 ```
@@ -123,7 +123,7 @@ dfb domains add demo ~/demo-some-other-project
 
 Domains can have their real source at another location than the `$HOME` directory. An example of this would be storing a domain on an external drive.
 
-```console
+```bash
 dfb domains add demo ~/demo-a-symlinked-domain /Volumes/[SOME VOLUME]/demo-a-symlinked-domain
 ```
 
@@ -193,7 +193,7 @@ The `stats` command offers a few helpful metrics to gain insight into how much s
 
 The following can be useful if restic repositories are stored in an environment where space is not free, on AWS S3 for instance.
 
-```console
+```bash
 dfb stats demo demo-repo repo-disk-space --time-unit days --time-length 34
 ```
 
