@@ -15,7 +15,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"image/color"
 	"os"
 	"time"
 
@@ -25,7 +24,6 @@ import (
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
-	"fyne.io/fyne/canvas"
 	"fyne.io/fyne/layout"
 	"fyne.io/fyne/widget"
 )
@@ -77,7 +75,7 @@ type DomainProgress struct {
 	NameWidget  *widget.Label
 	ETA         *widget.Label
 	ProgressBar *widget.ProgressBar
-	StatusLines []*canvas.Text
+	StatusLines []*widget.Label
 }
 
 // LoadUI will load the initial UI for gui
@@ -161,10 +159,10 @@ func (gui *ProgressGUI) handleStatusMessage(msg restic.StatusMessage) {
 	gui.currentDomain.ProgressBar.SetValue(msg.GetProcent())
 
 	if len(msg.CurrentFiles) == 1 {
-		gui.currentDomain.StatusLines[0].Text = msg.CurrentFiles[0]
+		gui.currentDomain.StatusLines[0].SetText(msg.CurrentFiles[0])
 	} else if len(msg.CurrentFiles) == 2 {
-		gui.currentDomain.StatusLines[0].Text = msg.CurrentFiles[0]
-		gui.currentDomain.StatusLines[1].Text = msg.CurrentFiles[1]
+		gui.currentDomain.StatusLines[0].SetText(msg.CurrentFiles[0])
+		gui.currentDomain.StatusLines[1].SetText(msg.CurrentFiles[1])
 	}
 }
 
@@ -214,18 +212,14 @@ func (gui *ProgressGUI) StartNewDomain(groupName string, domainName string) {
 		groupName,
 		fmt.Sprintf("%s/%s", paths.DFB(), groupName),
 	)
-	line1 := canvas.NewText("", color.White)
-	line1.TextSize = 9
-	line2 := canvas.NewText("", color.White)
-	line2.TextSize = 9
 	domainProgress := &DomainProgress{
 		Domain:      domain,
 		NameWidget:  widget.NewLabel(fmt.Sprintf("backing up %s", domain.Name)),
 		ETA:         widget.NewLabel("N/A"),
 		ProgressBar: widget.NewProgressBar(),
-		StatusLines: []*canvas.Text{
-			line1,
-			line2,
+		StatusLines: []*widget.Label{
+			widget.NewLabel(""),
+			widget.NewLabel(""),
 		},
 	}
 	domainProgress.ProgressBar.Max = 100
@@ -237,18 +231,14 @@ func (gui *ProgressGUI) StartNewDomain(groupName string, domainName string) {
 // StartNewEmptyDomain will add a new DomainProgress to gui's domains, however this
 // domain won't be able to receive any status or summary messages
 func (gui *ProgressGUI) StartNewEmptyDomain(groupName string, domainName string) {
-	line1 := canvas.NewText("", color.White)
-	line1.TextSize = 9
-	line2 := canvas.NewText("", color.White)
-	line2.TextSize = 9
 	domainProgress := &DomainProgress{
 		Domain:      d.Domain{},
 		NameWidget:  widget.NewLabel(fmt.Sprintf("backing up %s", domainName)),
 		ETA:         widget.NewLabel("N/A"),
 		ProgressBar: widget.NewProgressBar(),
-		StatusLines: []*canvas.Text{
-			line1,
-			line2,
+		StatusLines: []*widget.Label{
+			widget.NewLabel(""),
+			widget.NewLabel(""),
 		},
 	}
 	domainProgress.ProgressBar.Max = 100
