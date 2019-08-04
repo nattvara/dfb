@@ -11,7 +11,7 @@
 
 DFB_PATH="$HOME/.dfb"
 PROGRAM=$(basename "${0}")
-VERSION=1.0
+VERSION=1.1
 
 main() {
     if [[ "${1:-}" =~ ^-h|--help$  ]]
