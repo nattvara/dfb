@@ -35,7 +35,7 @@ backup() {
         confirm_backup_should_start $repo_name $group
     fi
 
-    promt_for_password
+    promt_for_password $repo_name
     verify_password $password $repo_path
 
     if [ "$gui" = true ]; then
@@ -81,6 +81,8 @@ backup() {
     backup_done=$(gdate +%s.%N)
     backup_took=$(echo "$backup_done - $backup_start" | bc)
     echo "$backup_took,$group,$repo_name,$(gdate +%Y-%m-%dT%H:%M:%S%z)" >> $repo_time_took_csv
+
+    terminal-notifier -group "dfb" -title "dfb" -subtitle "Done" -message "Backup of $group to $repo_name is done" -sender "com.example.dfb" -sound default > /dev/null
 
     printf "\n"
 }
