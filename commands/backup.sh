@@ -115,10 +115,10 @@ END
 }
 
 backup_domain() {
-    domain_path=$(cat "./$domain" | ggrep -E 'path' | egrep -o '[^:]+$' | tr -d '[:space:]')
-    symlink=$(cat "./$domain" | ggrep -E 'symlink' | egrep -o '[^:]+$' | tr -d '[:space:]')
-    exclusions=$(cat "./$domain" | ggrep -E 'exclusions' | egrep -o '[^:]+$' | tr " " "\n")
-    repos=$(cat "./$domain" | ggrep -E 'repos' | egrep -o '[^:]+$' | tr -d '[:space:]')
+    domain_path=$(cat "./$domain" | ggrep -E 'path:' | egrep -o '[^:]+$' | tr -d '[:space:]')
+    symlink=$(cat "./$domain" | ggrep -E 'symlink:' | egrep -o '[^:]+$' | tr -d '[:space:]')
+    exclusions=$(cat "./$domain" | ggrep -E 'exclusions:' | egrep -o '[^:]+$' | tr " " "\n")
+    repos=$(cat "./$domain" | ggrep -E 'repos:' | egrep -o '[^:]+$' | tr -d '[:space:]')
 
     if [[ $symlink != "" ]]; then
         if [ ! -d $symlink ]; then
