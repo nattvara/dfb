@@ -102,19 +102,19 @@ func (gui *ProgressGUI) updateLayout() {
 		)
 	}
 
-	scroll := fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(700, 400)))
+	scroll := fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(1000, 400)))
 	scroll.AddObject(widget.NewScrollContainer(domains))
 
 	statusLines := fyne.NewContainerWithLayout(layout.NewVBoxLayout())
 	for _, file := range gui.currentDomain.StatusLines {
-		file.Resize(fyne.NewSize(700, 10))
+		file.Resize(fyne.NewSize(1000, 10))
 		statusLines.AddObject(fyne.NewContainer(
 			file,
 		))
 	}
 
 	bottom := fyne.NewContainerWithLayout(
-		layout.NewFixedGridLayout(fyne.NewSize(700, 40)),
+		layout.NewFixedGridLayout(fyne.NewSize(1000, 40)),
 		widget.NewButton("Close", func() {
 			gui.app.Quit()
 		}),
@@ -126,7 +126,7 @@ func (gui *ProgressGUI) updateLayout() {
 		statusLines,
 		bottom,
 	)
-	content.Resize(fyne.NewSize(700, 475))
+	content.Resize(fyne.NewSize(1000, 475))
 	gui.window.SetContent(content)
 
 	for _, domain := range gui.domains {
