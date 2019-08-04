@@ -10,12 +10,16 @@ backup() {
 
     # options
     gui=false
+    confirm=false
 
     for var in "$@"; do
         if [[ "$var" =~ ^-h|--help$  ]]; then
             print_backup_help
+            exit
         elif [[ "$var" =~ ^--gui$  ]]; then
             gui=true
+        elif [[ "$var" =~ ^--confirm$  ]]; then
+            confirm=true
         fi
     done
 
@@ -26,6 +30,10 @@ backup() {
     repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
     domains_directory="$DFB_PATH/$group/domains"
     STATS_PATH="$DFB_PATH/$group/stats"
+
+    if [ "$confirm" = true ]; then
+        confirm_backup_should_start $repo_name $group
+    fi
 
     promt_for_password
     verify_password $password $repo_path
@@ -86,8 +94,22 @@ Usage:
 
 Options:
   --gui         Show progress in a graphical user interface.
+  --confirm     Show a dialogue that the user have to confirm for backup to start. Useful if backup is started by a cron job.
   -h --help     Show this screen.
 HEREDOC
+}
+
+confirm_backup_should_start() {
+    repo_name=$1
+    group=$2
+    script_result=$(osascript -s o <<END
+display dialog "A backup is about to start \n\ngroup: \t$group\nrepo: \t$repo_name" buttons {"Proceed", "Abort"} default button "Proceed" cancel button "Abort" with title "dfb"
+END
+    )
+    if [ "$script_result" != "button returned:Proceed" ]; then
+        terminal-notifier -group "dfb" -title "dfb" -subtitle "Aborted" -message "Backup of $group was aborted" -sender "com.example.dfb" > /dev/null
+        exit 1
+    fi
 }
 
 backup_domain() {
