@@ -70,7 +70,8 @@ type ProgressGUI struct {
 // DomainProgress contains a domain and the widgets to display the backup progress
 // of that domain
 type DomainProgress struct {
-	Domain d.Domain
+	Domain          d.Domain
+	SummaryReceived bool
 
 	NameWidget  *widget.Label
 	ETA         *widget.Label
@@ -155,6 +156,9 @@ func (gui *ProgressGUI) ListenForMessages(channel chan restic.Message) {
 }
 
 func (gui *ProgressGUI) handleStatusMessage(msg restic.StatusMessage) {
+	if gui.currentDomain.SummaryReceived {
+		return
+	}
 	gui.currentDomain.ETA.SetText(msg.GetETAString())
 	gui.currentDomain.ProgressBar.SetValue(msg.GetProcent())
 
@@ -182,6 +186,7 @@ func truncateString(str string, max int) string {
 }
 
 func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
+	gui.currentDomain.SummaryReceived = true
 	gui.currentDomain.ETA.SetText(fmt.Sprintf(
 		"took %s, added: %s",
 		msg.GetDurationString(),
@@ -247,10 +252,11 @@ func (gui *ProgressGUI) StartNewDomain(groupName string, domainName string) {
 // domain won't be able to receive any status or summary messages
 func (gui *ProgressGUI) StartNewEmptyDomain(groupName string, domainName string) {
 	domainProgress := &DomainProgress{
-		Domain:      d.Domain{},
-		NameWidget:  widget.NewLabel(fmt.Sprintf("backing up %s", domainName)),
-		ETA:         widget.NewLabel("N/A"),
-		ProgressBar: widget.NewProgressBar(),
+		Domain:          d.Domain{},
+		SummaryReceived: false,
+		NameWidget:      widget.NewLabel(fmt.Sprintf("backing up %s", domainName)),
+		ETA:             widget.NewLabel("N/A"),
+		ProgressBar:     widget.NewProgressBar(),
 		StatusLines: []*widget.Label{
 			widget.NewLabel(""),
 			widget.NewLabel(""),
