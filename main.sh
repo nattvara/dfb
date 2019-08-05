@@ -106,6 +106,11 @@ verify_env() {
         exit 1
     fi
 
+    if [ "$(command -v unbuffer)" == "" ]; then
+        echo "unbuffer is not installed, run: brew install expect"
+        exit 1
+    fi
+
     if [ "$(command -v terminal-notifier)" == "" ]; then
         echo "terminal-notifier is not installed, run: brew install terminal-notifier"
         exit 1
