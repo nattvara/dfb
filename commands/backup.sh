@@ -40,7 +40,7 @@ backup() {
 
     if [ "$gui" = true ]; then
         touch /tmp/dfb-progress
-        tail -f /tmp/dfb-progress | dfb-progress-parser-gui > /dev/stdout 2>&1 &
+        unbuffer tail -f /tmp/dfb-progress | dfb-progress-parser-gui > /dev/stdout 2>&1 &
     fi
 
     cd $domains_directory
@@ -174,7 +174,7 @@ backup_domain() {
         --verbose \
         --json \
         2>&1 \
-        | tee >( \
+        | unbuffer -p tee >( \
             ggrep "summary" \
             | jq -r 'select(.message_type=="summary") | [.[]] | @csv' \
             | tr -d '\n' >> "$snapshots_csv" \
@@ -182,7 +182,7 @@ backup_domain() {
         ) \
         | if [ "$gui" = true ]; \
             then \
-                ggrep "" >> /tmp/dfb-progress; \
+                unbuffer -p ggrep "" >> /tmp/dfb-progress; \
             else \
                 dfb-progress-parser "$group" "$domain"; \
         fi
