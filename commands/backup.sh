@@ -44,7 +44,7 @@ backup() {
     fi
 
     cd $domains_directory
-    find . -type f -print0 |
+    find . -type f -print0 | sort -z |
     while IFS= read -r -d '' domain; do
         domain=$(echo $domain | sed -e 's/^\.\///g')
         backup_domain $password $repo_name $repo_path $domain
