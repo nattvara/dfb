@@ -74,7 +74,7 @@ func PrintStatusMessage(msg restic.StatusMessage, domain d.Domain) int {
 	tm.MoveCursorForward(50 - len(message))
 	tm.Print(msg.GetProcentString())
 	if msg.SecondsRemaining != 0 {
-		tm.Printf("  ETA %vs", msg.SecondsRemaining)
+		tm.Print(" " + msg.GetStatusString())
 	}
 
 	tm.Printf("\n")

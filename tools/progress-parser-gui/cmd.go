@@ -159,7 +159,7 @@ func (gui *ProgressGUI) handleStatusMessage(msg restic.StatusMessage) {
 	if gui.currentDomain.SummaryReceived {
 		return
 	}
-	gui.currentDomain.ETA.SetText(msg.GetETAString())
+	gui.currentDomain.ETA.SetText(msg.GetStatusString())
 	gui.currentDomain.ProgressBar.SetValue(msg.GetProcent())
 
 	if len(msg.CurrentFiles) == 1 {
@@ -188,7 +188,7 @@ func truncateString(str string, max int) string {
 func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
 	gui.currentDomain.SummaryReceived = true
 	gui.currentDomain.ETA.SetText(fmt.Sprintf(
-		"took %s, added: %s",
+		"Took %s, Added: %s",
 		msg.GetDurationString(),
 		msg.GetDataAddedString(),
 	))
