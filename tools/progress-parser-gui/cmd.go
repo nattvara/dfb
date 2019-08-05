@@ -159,11 +159,26 @@ func (gui *ProgressGUI) handleStatusMessage(msg restic.StatusMessage) {
 	gui.currentDomain.ProgressBar.SetValue(msg.GetProcent())
 
 	if len(msg.CurrentFiles) == 1 {
-		gui.currentDomain.StatusLines[0].SetText(msg.CurrentFiles[0])
+		gui.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 150))
+		gui.currentDomain.StatusLines[1].SetText("")
 	} else if len(msg.CurrentFiles) == 2 {
-		gui.currentDomain.StatusLines[0].SetText(msg.CurrentFiles[0])
-		gui.currentDomain.StatusLines[1].SetText(msg.CurrentFiles[1])
+		gui.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 150))
+		gui.currentDomain.StatusLines[1].SetText(truncateString(msg.CurrentFiles[1], 150))
+	} else {
+		gui.currentDomain.StatusLines[0].SetText("")
+		gui.currentDomain.StatusLines[1].SetText("")
 	}
+}
+
+func truncateString(str string, max int) string {
+	out := str
+	if len(str) > max {
+		if max > 3 {
+			max -= 3
+		}
+		out = str[0:max] + "..."
+	}
+	return out
 }
 
 func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
@@ -173,8 +188,8 @@ func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
 		msg.GetDataAddedString(),
 	))
 	gui.currentDomain.ProgressBar.SetValue(100)
-	gui.currentDomain.StatusLines[0].Text = ""
-	gui.currentDomain.StatusLines[1].Text = ""
+	gui.currentDomain.StatusLines[0].SetText("")
+	gui.currentDomain.StatusLines[1].SetText("")
 }
 
 func (gui *ProgressGUI) handleDFBMessage(msg restic.DFBMessage) {
@@ -189,13 +204,13 @@ func (gui *ProgressGUI) handleDFBMessage(msg restic.DFBMessage) {
 		if gui.currentDomain == nil {
 			return
 		}
-		gui.currentDomain.StatusLines[0].Text = "gathering stats for " + msg.Domain
+		gui.currentDomain.StatusLines[0].SetText("gathering stats for " + msg.Domain)
 		gui.updateLayout()
 	case "gathering_stats_done":
 		if gui.currentDomain == nil {
 			return
 		}
-		gui.currentDomain.StatusLines[1].Text = "done."
+		gui.currentDomain.StatusLines[1].SetText("done.")
 		gui.updateLayout()
 	default:
 		gui.StartNewEmptyDomain(msg.Group, msg.Domain)
