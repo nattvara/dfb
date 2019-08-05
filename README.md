@@ -37,6 +37,7 @@ brew install grep
 brew install jq
 brew install coreutils
 brew install terminal-notifier
+brew install expect
 ```
 
 #### Install go and fyne
