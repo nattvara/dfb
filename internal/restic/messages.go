@@ -102,6 +102,12 @@ func (msg *SummaryMessage) GetDataAddedString() string {
 	return bytesToString(msg.DataAdded)
 }
 
+// GetDataProcessedString returns a nicely formatted string of the of data
+// that was processed during backup eg. 289.0 MiB 3.1 GiB
+func (msg *SummaryMessage) GetDataProcessedString() string {
+	return bytesToString(msg.BytesProcessed)
+}
+
 // SummaryMessageFromString will create a SummaryMessage from given string
 func SummaryMessageFromString(data string) SummaryMessage {
 	var summary SummaryMessage
