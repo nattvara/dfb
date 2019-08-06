@@ -65,8 +65,8 @@ func (msg *StatusMessage) GetStatusString() string {
 		msg.GetETA(),
 		msg.FilesDone,
 		msg.TotalFiles,
-		msg.GetTotalBytesString(),
 		msg.GetBytesDoneString(),
+		msg.GetTotalBytesString(),
 	)
 }
 
