@@ -55,7 +55,7 @@ list_domains() {
         cd "$DFB_PATH/$group/domains"
         group="$(echo $group | sed -e 's/^\.\///g')"
 
-        find . -type f -print0 |
+        find . -type f -print0 | sort -z |
         while IFS= read -r -d '' domain; do
             domain="$(echo $domain | sed -e 's/^\.\///g')"
             echo "$group:$domain"
