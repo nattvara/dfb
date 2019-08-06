@@ -91,7 +91,7 @@ type SummaryMessage struct {
 	SnapshotID     string  `json:"snapshot_id"`
 }
 
-// GetDurationString returns a string with TotalDuration formatted like x.xs
+// GetDurationString returns a string with TotalDuration formatted like 2h 13min 20s
 func (msg *SummaryMessage) GetDurationString() string {
 	return timeToString(int(msg.TotalDuration))
 }
@@ -132,24 +132,20 @@ func DFBMessageFromString(data string) DFBMessage {
 }
 
 // timeToString formats a number of seconds s to a shorter representation
-// such as 12 s, 31 min or 2.3 h
+// such as 2h 13min 20s
 func timeToString(s int) string {
-	var unit string
-	var value float64
 	if s < 60 {
-		value = float64(s)
-		unit = "s"
+		return fmt.Sprintf("%v s", s)
 	} else if s < 60*60 {
-		value = float64(s) / float64(60)
-		unit = "min"
-	} else {
-		value = float64(s) / float64(60*60)
-		unit = "h"
+		seconds := math.Mod(float64(s), float64(60))
+		minutes := float64((s - int(seconds)) / 60)
+		return fmt.Sprintf("%vmin %vs", minutes, seconds)
 	}
-	if unit == "s" {
-		return fmt.Sprintf("%v %s", value, unit)
-	}
-	return fmt.Sprintf("%.1f %s", value, unit)
+	seconds := math.Mod(float64(s), float64(60))
+	totalMinutes := float64((s - int(seconds)) / 60)
+	minutes := math.Mod(totalMinutes, float64(60))
+	hours := (totalMinutes - minutes) / 60
+	return fmt.Sprintf("%vh %vmin %vs", hours, minutes, seconds)
 }
 
 // bytesToString formats a float64 of bytes to a nicely formatted
