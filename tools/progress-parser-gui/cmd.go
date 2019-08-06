@@ -188,8 +188,9 @@ func truncateString(str string, max int) string {
 func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
 	gui.currentDomain.SummaryReceived = true
 	gui.currentDomain.ETA.SetText(fmt.Sprintf(
-		"Took %s, Added: %s",
+		"Took %s, Processed %s, Added %s",
 		msg.GetDurationString(),
+		msg.GetDataProcessedString(),
 		msg.GetDataAddedString(),
 	))
 	gui.currentDomain.ProgressBar.SetValue(100)

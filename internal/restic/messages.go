@@ -60,7 +60,7 @@ func (msg *StatusMessage) GetBytesDoneString() string {
 // GetStatusString returns a string representation of status message
 func (msg *StatusMessage) GetStatusString() string {
 	return fmt.Sprintf(
-		"Elapsed: %s, ETA: %s, Files %v/%v Left To Process %s/%s",
+		"Elapsed: %s, ETA: %s, Files: %v/%v Processing: %s/%s",
 		msg.GetElapsedTime(),
 		msg.GetETA(),
 		msg.FilesDone,
@@ -139,6 +139,9 @@ func timeToString(s int) string {
 	} else {
 		value = float64(s) / float64(60*60)
 		unit = "h"
+	}
+	if unit == "s" {
+		return fmt.Sprintf("%v %s", value, unit)
 	}
 	return fmt.Sprintf("%.1f %s", value, unit)
 }
