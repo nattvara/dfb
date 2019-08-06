@@ -129,18 +129,18 @@ func DFBMessageFromString(data string) DFBMessage {
 // such as 12 s, 31 min or 2.3 h
 func timeToString(s int) string {
 	var unit string
-	var value int
+	var value float64
 	if s < 60 {
-		value = s
+		value = float64(s)
 		unit = "s"
 	} else if s < 60*60 {
-		value = s / 60
+		value = float64(s) / float64(60)
 		unit = "min"
 	} else {
-		value = s / 60 * 60
+		value = float64(s) / float64(60*60)
 		unit = "h"
 	}
-	return fmt.Sprintf("%v%s", value, unit)
+	return fmt.Sprintf("%.1f %s", value, unit)
 }
 
 // bytesToString formats a float64 of bytes to a nicely formatted
