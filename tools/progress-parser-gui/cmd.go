@@ -277,7 +277,7 @@ func (gui *ProgressGUI) handleDFBMessage(msg restic.DFBMessage) {
 		gui.StartNewEmptyDomain(msg.Group, msg.Domain)
 		gui.currentDomain.Elapsed.SetText("Took: 0 s")
 		gui.currentDomain.Data.SetText("Unavailable")
-		gui.currentDomain.Files.SetText("0 B")
+		gui.currentDomain.Files.SetText("Added: 0 B")
 	case "gathering_stats":
 		if gui.currentDomain == nil {
 			return
@@ -304,7 +304,7 @@ func (gui *ProgressGUI) handleDFBMessage(msg restic.DFBMessage) {
 		}
 		gui.currentDomain.Elapsed.SetText("Took: 0 s")
 		gui.currentDomain.Data.SetText("Skipped")
-		gui.currentDomain.Files.SetText("0 B")
+		gui.currentDomain.Files.SetText("Added: 0 B")
 		gui.updateLayout()
 	}
 }
