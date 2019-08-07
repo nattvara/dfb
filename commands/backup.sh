@@ -69,7 +69,7 @@ backup() {
 
     if [ "$gui" = true ]; then
         print_message_to_progress_file "$group" "repo" "gathering_stats_done"
-        print_message_to_progress_file "$group" "done" "null"
+        print_message_to_progress_file "$group" "null" "done"
     else
         echo "done"
     fi
