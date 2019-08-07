@@ -51,6 +51,21 @@ func main() {
 	app.Run()
 }
 
+// DomainProgress contains a domain and the widgets to display the backup progress
+// of that domain
+type DomainProgress struct {
+	Domain    d.Domain
+	Completed bool
+
+	Name        *widget.Label
+	Elapsed     *widget.Label
+	ETA         *widget.Label
+	Files       *widget.Label
+	Data        *widget.Label
+	ProgressBar *widget.ProgressBar
+	StatusLines []*widget.Label
+}
+
 // NewProgress creates a new gui fyne app
 func NewProgress(app fyne.App) *ProgressGUI {
 	gui := &ProgressGUI{}
@@ -62,21 +77,10 @@ func NewProgress(app fyne.App) *ProgressGUI {
 type ProgressGUI struct {
 	domains       []*DomainProgress
 	currentDomain *DomainProgress
+	Done          bool
 
 	window fyne.Window
 	app    fyne.App
-}
-
-// DomainProgress contains a domain and the widgets to display the backup progress
-// of that domain
-type DomainProgress struct {
-	Domain          d.Domain
-	SummaryReceived bool
-
-	NameWidget  *widget.Label
-	ETA         *widget.Label
-	ProgressBar *widget.ProgressBar
-	StatusLines []*widget.Label
 }
 
 // LoadUI will load the initial UI for gui
@@ -89,52 +93,113 @@ func (gui *ProgressGUI) LoadUI(app fyne.App) {
 }
 
 func (gui *ProgressGUI) updateLayout() {
-	domains := fyne.NewContainerWithLayout(layout.NewGridLayout(1))
+	current := fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(1000, 200)))
 	for _, domain := range gui.domains {
-		domains.AddObject(
+		if domain.Completed {
+			continue
+		}
+
+		name := fyne.NewContainerWithLayout(
+			layout.NewGridLayout(1),
+			domain.Name,
+		)
+		progress := fyne.NewContainerWithLayout(
+			layout.NewGridLayout(1),
+			domain.ProgressBar,
+		)
+		stats := fyne.NewContainerWithLayout(
+			layout.NewGridLayout(4),
+			domain.Elapsed,
+			domain.ETA,
+			domain.Files,
+			domain.Data,
+		)
+		line1 := fyne.NewContainerWithLayout(
+			layout.NewGridLayout(1),
+			gui.currentDomain.StatusLines[0],
+		)
+		line2 := fyne.NewContainerWithLayout(
+			layout.NewGridLayout(1),
+			gui.currentDomain.StatusLines[1],
+		)
+
+		current.AddObject(fyne.NewContainerWithLayout(
+			layout.NewGridLayout(1),
+			name,
+			progress,
+			stats,
+			line1,
+			line2,
+		))
+	}
+
+	done := fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(1000, 80)))
+	if gui.Done {
+		done.AddObject(fyne.NewContainerWithLayout(
+			layout.NewGridLayout(1),
+			widget.NewLabelWithStyle("--- Backup Finished ---", fyne.TextAlignCenter, fyne.TextStyle{}),
+		))
+	}
+
+	completed := fyne.NewContainerWithLayout(layout.NewVBoxLayout())
+	for _, domain := range gui.domains {
+		if !domain.Completed {
+			continue
+		}
+		completed.AddObject(
 			fyne.NewContainerWithLayout(
-				layout.NewGridLayout(3),
-				domain.NameWidget,
-				domain.ETA,
-				domain.ProgressBar,
+				layout.NewGridLayout(2),
+				domain.Name,
+				fyne.NewContainerWithLayout(
+					layout.NewGridLayout(3),
+					domain.Elapsed,
+					domain.Data,
+					domain.Files,
+				),
 			),
 		)
 	}
 
-	scroll := fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(1500, 400)))
-	scroll.AddObject(widget.NewScrollContainer(domains))
-
-	statusLines := fyne.NewContainerWithLayout(layout.NewVBoxLayout())
-	for _, file := range gui.currentDomain.StatusLines {
-		file.Resize(fyne.NewSize(1500, 10))
-		statusLines.AddObject(fyne.NewContainer(
-			file,
-		))
-	}
+	scroll := fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(1000, 400)))
+	scroll.AddObject(widget.NewScrollContainer(completed))
 
 	bottom := fyne.NewContainerWithLayout(
-		layout.NewFixedGridLayout(fyne.NewSize(1500, 40)),
+		layout.NewFixedGridLayout(fyne.NewSize(1000, 40)),
 		widget.NewButton("Close", func() {
 			gui.app.Quit()
 		}),
 	)
 
-	content := fyne.NewContainerWithLayout(
-		layout.NewVBoxLayout(),
-		scroll,
-		statusLines,
-		bottom,
+	divider := fyne.NewContainerWithLayout(
+		layout.NewGridLayout(1),
+		widget.NewLabel(""),
+		widget.NewLabelWithStyle("--- Completed Domains ---", fyne.TextAlignCenter, fyne.TextStyle{}),
 	)
-	content.Resize(fyne.NewSize(1500, 475))
+
+	content := fyne.NewContainerWithLayout(layout.NewVBoxLayout())
+	content.AddObject(current)
+	content.AddObject(done)
+	content.AddObject(divider)
+	content.AddObject(scroll)
+	content.AddObject(bottom)
+	content.Resize(fyne.NewSize(1000, 675))
 	gui.window.SetContent(content)
 
 	for _, domain := range gui.domains {
-		domain.NameWidget.Show()
+		domain.Name.Show()
+		domain.Elapsed.Show()
 		domain.ETA.Show()
-		domain.ProgressBar.Show()
+		domain.Files.Show()
+		domain.Data.Show()
+		if !domain.Completed {
+			domain.ProgressBar.Show()
+		} else {
+			domain.Files.Show()
+			domain.ProgressBar.Hide()
+		}
+		domain.StatusLines[0].Show()
+		domain.StatusLines[1].Show()
 	}
-	gui.currentDomain.StatusLines[0].Show()
-	gui.currentDomain.StatusLines[1].Show()
 }
 
 // ListenForMessages will listen for restic messages on given channel for gui
@@ -156,18 +221,21 @@ func (gui *ProgressGUI) ListenForMessages(channel chan restic.Message) {
 }
 
 func (gui *ProgressGUI) handleStatusMessage(msg restic.StatusMessage) {
-	if gui.currentDomain.SummaryReceived {
+	if gui.currentDomain.Completed {
 		return
 	}
-	gui.currentDomain.ETA.SetText(msg.GetStatusString())
+	gui.currentDomain.Elapsed.SetText("Elapsed: " + msg.GetElapsedTime())
+	gui.currentDomain.ETA.SetText("ETA: " + msg.GetETA())
+	gui.currentDomain.Files.SetText(fmt.Sprintf("Files: %v/%v", msg.FilesDone, msg.TotalFiles))
+	gui.currentDomain.Data.SetText(fmt.Sprintf("%s/%s", msg.GetBytesDoneString(), msg.GetTotalBytesString()))
 	gui.currentDomain.ProgressBar.SetValue(msg.GetProcent())
 
 	if len(msg.CurrentFiles) == 1 {
-		gui.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 150))
+		gui.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 100))
 		gui.currentDomain.StatusLines[1].SetText("")
 	} else if len(msg.CurrentFiles) == 2 {
-		gui.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 150))
-		gui.currentDomain.StatusLines[1].SetText(truncateString(msg.CurrentFiles[1], 150))
+		gui.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 100))
+		gui.currentDomain.StatusLines[1].SetText(truncateString(msg.CurrentFiles[1], 100))
 	} else {
 		gui.currentDomain.StatusLines[0].SetText("")
 		gui.currentDomain.StatusLines[1].SetText("")
@@ -186,13 +254,10 @@ func truncateString(str string, max int) string {
 }
 
 func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
-	gui.currentDomain.SummaryReceived = true
-	gui.currentDomain.ETA.SetText(fmt.Sprintf(
-		"Took %s, Processed %s, Added %s",
-		msg.GetDurationString(),
-		msg.GetDataProcessedString(),
-		msg.GetDataAddedString(),
-	))
+	gui.currentDomain.Completed = true
+	gui.currentDomain.Elapsed.SetText("Took: " + msg.GetDurationString())
+	gui.currentDomain.Data.SetText("Processed: " + msg.GetDataProcessedString())
+	gui.currentDomain.Files.SetText("Added: " + msg.GetDataAddedString())
 	gui.currentDomain.ProgressBar.SetValue(100)
 	gui.currentDomain.StatusLines[0].SetText("")
 	gui.currentDomain.StatusLines[1].SetText("")
@@ -201,27 +266,46 @@ func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
 func (gui *ProgressGUI) handleDFBMessage(msg restic.DFBMessage) {
 	switch msg.Action {
 	case "begin":
+		if gui.currentDomain != nil {
+			gui.currentDomain.Completed = true
+		}
 		gui.StartNewDomain(msg.Group, msg.Domain)
 	case "unavailable":
+		if gui.currentDomain != nil {
+			gui.currentDomain.Completed = true
+		}
 		gui.StartNewEmptyDomain(msg.Group, msg.Domain)
-		gui.currentDomain.ETA.SetText("unavailable")
-		gui.currentDomain.ProgressBar.SetValue(100)
+		gui.currentDomain.Elapsed.SetText("Took: 0 s")
+		gui.currentDomain.Data.SetText("Unavailable")
+		gui.currentDomain.Files.SetText("0 B")
 	case "gathering_stats":
 		if gui.currentDomain == nil {
 			return
 		}
+		gui.currentDomain.Completed = true
 		gui.currentDomain.StatusLines[0].SetText("gathering stats for " + msg.Domain)
 		gui.updateLayout()
 	case "gathering_stats_done":
 		if gui.currentDomain == nil {
 			return
 		}
+		gui.currentDomain.Completed = true
 		gui.currentDomain.StatusLines[1].SetText("done.")
 		gui.updateLayout()
-	default:
-		gui.StartNewEmptyDomain(msg.Group, msg.Domain)
-		gui.currentDomain.ETA.SetText(msg.Action)
-		gui.currentDomain.ProgressBar.SetValue(100)
+	case "done":
+		if gui.currentDomain == nil {
+			return
+		}
+		gui.Done = true
+		gui.updateLayout()
+	case "not_this_repo":
+		if gui.currentDomain == nil {
+			return
+		}
+		gui.currentDomain.Elapsed.SetText("Took: 0 s")
+		gui.currentDomain.Data.SetText("Skipped")
+		gui.currentDomain.Files.SetText("0 B")
+		gui.updateLayout()
 	}
 }
 
@@ -235,8 +319,11 @@ func (gui *ProgressGUI) StartNewDomain(groupName string, domainName string) {
 	)
 	domainProgress := &DomainProgress{
 		Domain:      domain,
-		NameWidget:  widget.NewLabel(fmt.Sprintf("backing up %s", domain.Name)),
-		ETA:         widget.NewLabel("N/A"),
+		Name:        widget.NewLabel(fmt.Sprintf("backing up %s", domain.Name)),
+		Elapsed:     widget.NewLabelWithStyle("N/A", fyne.TextAlignLeading, fyne.TextStyle{}),
+		ETA:         widget.NewLabelWithStyle("N/A", fyne.TextAlignLeading, fyne.TextStyle{}),
+		Files:       widget.NewLabelWithStyle("N/A", fyne.TextAlignTrailing, fyne.TextStyle{}),
+		Data:        widget.NewLabelWithStyle("N/A", fyne.TextAlignTrailing, fyne.TextStyle{}),
 		ProgressBar: widget.NewProgressBar(),
 		StatusLines: []*widget.Label{
 			widget.NewLabel(""),
@@ -253,11 +340,14 @@ func (gui *ProgressGUI) StartNewDomain(groupName string, domainName string) {
 // domain won't be able to receive any status or summary messages
 func (gui *ProgressGUI) StartNewEmptyDomain(groupName string, domainName string) {
 	domainProgress := &DomainProgress{
-		Domain:          d.Domain{},
-		SummaryReceived: false,
-		NameWidget:      widget.NewLabel(fmt.Sprintf("backing up %s", domainName)),
-		ETA:             widget.NewLabel("N/A"),
-		ProgressBar:     widget.NewProgressBar(),
+		Domain:      d.Domain{},
+		Completed:   false,
+		Name:        widget.NewLabel(fmt.Sprintf("backing up %s", domainName)),
+		Elapsed:     widget.NewLabelWithStyle("N/A", fyne.TextAlignLeading, fyne.TextStyle{}),
+		ETA:         widget.NewLabelWithStyle("N/A", fyne.TextAlignLeading, fyne.TextStyle{}),
+		Files:       widget.NewLabelWithStyle("N/A", fyne.TextAlignTrailing, fyne.TextStyle{}),
+		Data:        widget.NewLabelWithStyle("N/A", fyne.TextAlignTrailing, fyne.TextStyle{}),
+		ProgressBar: widget.NewProgressBar(),
 		StatusLines: []*widget.Label{
 			widget.NewLabel(""),
 			widget.NewLabel(""),
