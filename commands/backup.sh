@@ -228,7 +228,7 @@ print_domain_unavailable() {
 
 print_not_this_repo() {
     if [ "$gui" = true ]; then
-        print_message_to_progress_file "$group" "$domain" "not backed up to $repo_name"
+        print_message_to_progress_file "$group" "$domain" "not_this_repo"
         return
     fi
     printf "\033[50D\033[0C backing up $domain "
