@@ -26,8 +26,8 @@ func main() {
 
 	app := app.New()
 
-	p := progress.NewProgress(app)
-	p.LoadUI(app)
+	report := progress.New(app)
+	report.LoadUI(app)
 
 	messages := make(chan restic.Message)
 
@@ -41,6 +41,6 @@ func main() {
 		}
 	}()
 
-	go p.ListenForMessages(messages)
+	go report.ListenForMessages(messages)
 	app.Run()
 }

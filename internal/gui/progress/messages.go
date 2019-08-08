@@ -6,43 +6,43 @@ import (
 	"github.com/nattvara/dfb/internal/restic"
 )
 
-// ListenForMessages will listen for restic messages on given channel for gui
-func (gui *ProgressGUI) ListenForMessages(channel chan restic.Message) {
+// ListenForMessages will listen for restic messages on given channel for report
+func (report *Report) ListenForMessages(channel chan restic.Message) {
 	for {
 		msg := <-channel
 		switch msg.Type {
 		case "dfb":
 			dfb := restic.DFBMessageFromString(msg.Body)
-			gui.handleDFBMessage(dfb)
+			report.handleDFBMessage(dfb)
 		case "status":
 			status := restic.StatusMessageFromString(msg.Body)
-			gui.handleStatusMessage(status)
+			report.handleStatusMessage(status)
 		case "summary":
 			summary := restic.SummaryMessageFromString(msg.Body)
-			gui.handleSummaryMessage(summary)
+			report.handleSummaryMessage(summary)
 		}
 	}
 }
 
-func (gui *ProgressGUI) handleStatusMessage(msg restic.StatusMessage) {
-	if gui.currentDomain.Completed {
+func (report *Report) handleStatusMessage(msg restic.StatusMessage) {
+	if report.currentDomain.Completed {
 		return
 	}
-	gui.currentDomain.Elapsed.SetText("Elapsed: " + msg.GetElapsedTime())
-	gui.currentDomain.ETA.SetText("ETA: " + msg.GetETA())
-	gui.currentDomain.Files.SetText(fmt.Sprintf("Files: %v/%v", msg.FilesDone, msg.TotalFiles))
-	gui.currentDomain.Data.SetText(fmt.Sprintf("%s/%s", msg.GetBytesDoneString(), msg.GetTotalBytesString()))
-	gui.currentDomain.ProgressBar.SetValue(msg.GetProcent())
+	report.currentDomain.Elapsed.SetText("Elapsed: " + msg.GetElapsedTime())
+	report.currentDomain.ETA.SetText("ETA: " + msg.GetETA())
+	report.currentDomain.Files.SetText(fmt.Sprintf("Files: %v/%v", msg.FilesDone, msg.TotalFiles))
+	report.currentDomain.Data.SetText(fmt.Sprintf("%s/%s", msg.GetBytesDoneString(), msg.GetTotalBytesString()))
+	report.currentDomain.ProgressBar.SetValue(msg.GetProcent())
 
 	if len(msg.CurrentFiles) == 1 {
-		gui.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 100))
-		gui.currentDomain.StatusLines[1].SetText("")
+		report.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 100))
+		report.currentDomain.StatusLines[1].SetText("")
 	} else if len(msg.CurrentFiles) == 2 {
-		gui.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 100))
-		gui.currentDomain.StatusLines[1].SetText(truncateString(msg.CurrentFiles[1], 100))
+		report.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 100))
+		report.currentDomain.StatusLines[1].SetText(truncateString(msg.CurrentFiles[1], 100))
 	} else {
-		gui.currentDomain.StatusLines[0].SetText("")
-		gui.currentDomain.StatusLines[1].SetText("")
+		report.currentDomain.StatusLines[0].SetText("")
+		report.currentDomain.StatusLines[1].SetText("")
 	}
 }
 
@@ -57,58 +57,58 @@ func truncateString(str string, max int) string {
 	return out
 }
 
-func (gui *ProgressGUI) handleSummaryMessage(msg restic.SummaryMessage) {
-	gui.currentDomain.Completed = true
-	gui.currentDomain.Elapsed.SetText("Took: " + msg.GetDurationString())
-	gui.currentDomain.Data.SetText("Processed: " + msg.GetDataProcessedString())
-	gui.currentDomain.Files.SetText("Added: " + msg.GetDataAddedString())
-	gui.currentDomain.ProgressBar.SetValue(100)
-	gui.currentDomain.StatusLines[0].SetText("")
-	gui.currentDomain.StatusLines[1].SetText("")
+func (report *Report) handleSummaryMessage(msg restic.SummaryMessage) {
+	report.currentDomain.Completed = true
+	report.currentDomain.Elapsed.SetText("Took: " + msg.GetDurationString())
+	report.currentDomain.Data.SetText("Processed: " + msg.GetDataProcessedString())
+	report.currentDomain.Files.SetText("Added: " + msg.GetDataAddedString())
+	report.currentDomain.ProgressBar.SetValue(100)
+	report.currentDomain.StatusLines[0].SetText("")
+	report.currentDomain.StatusLines[1].SetText("")
 }
 
-func (gui *ProgressGUI) handleDFBMessage(msg restic.DFBMessage) {
+func (report *Report) handleDFBMessage(msg restic.DFBMessage) {
 	switch msg.Action {
 	case "begin":
-		if gui.currentDomain != nil {
-			gui.currentDomain.Completed = true
+		if report.currentDomain != nil {
+			report.currentDomain.Completed = true
 		}
-		gui.StartNewDomain(msg.Group, msg.Domain)
+		report.StartNewDomain(msg.Group, msg.Domain)
 	case "unavailable":
-		if gui.currentDomain != nil {
-			gui.currentDomain.Completed = true
+		if report.currentDomain != nil {
+			report.currentDomain.Completed = true
 		}
-		gui.StartNewEmptyDomain(msg.Group, msg.Domain)
-		gui.currentDomain.Elapsed.SetText("Took: 0 s")
-		gui.currentDomain.Data.SetText("Unavailable")
-		gui.currentDomain.Files.SetText("Added: 0 B")
+		report.StartNewEmptyDomain(msg.Group, msg.Domain)
+		report.currentDomain.Elapsed.SetText("Took: 0 s")
+		report.currentDomain.Data.SetText("Unavailable")
+		report.currentDomain.Files.SetText("Added: 0 B")
 	case "gathering_stats":
-		if gui.currentDomain == nil {
+		if report.currentDomain == nil {
 			return
 		}
-		gui.currentDomain.Completed = true
-		gui.currentDomain.StatusLines[0].SetText("gathering stats for " + msg.Domain)
-		gui.updateLayout()
+		report.currentDomain.Completed = true
+		report.currentDomain.StatusLines[0].SetText("gathering stats for " + msg.Domain)
+		report.updateLayout()
 	case "gathering_stats_done":
-		if gui.currentDomain == nil {
+		if report.currentDomain == nil {
 			return
 		}
-		gui.currentDomain.Completed = true
-		gui.currentDomain.StatusLines[1].SetText("done.")
-		gui.updateLayout()
+		report.currentDomain.Completed = true
+		report.currentDomain.StatusLines[1].SetText("done.")
+		report.updateLayout()
 	case "done":
-		if gui.currentDomain == nil {
+		if report.currentDomain == nil {
 			return
 		}
-		gui.Done = true
-		gui.updateLayout()
+		report.done = true
+		report.updateLayout()
 	case "not_this_repo":
-		if gui.currentDomain == nil {
+		if report.currentDomain == nil {
 			return
 		}
-		gui.currentDomain.Elapsed.SetText("Took: 0 s")
-		gui.currentDomain.Data.SetText("Skipped")
-		gui.currentDomain.Files.SetText("Added: 0 B")
-		gui.updateLayout()
+		report.currentDomain.Elapsed.SetText("Took: 0 s")
+		report.currentDomain.Data.SetText("Skipped")
+		report.currentDomain.Files.SetText("Added: 0 B")
+		report.updateLayout()
 	}
 }

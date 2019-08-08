@@ -6,9 +6,9 @@ import (
 	"fyne.io/fyne/widget"
 )
 
-func (gui *ProgressGUI) updateLayout() {
+func (report *Report) updateLayout() {
 	current := fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(1000, 200)))
-	for _, domain := range gui.domains {
+	for _, domain := range report.domains {
 		if domain.Completed {
 			continue
 		}
@@ -30,11 +30,11 @@ func (gui *ProgressGUI) updateLayout() {
 		)
 		line1 := fyne.NewContainerWithLayout(
 			layout.NewGridLayout(1),
-			gui.currentDomain.StatusLines[0],
+			report.currentDomain.StatusLines[0],
 		)
 		line2 := fyne.NewContainerWithLayout(
 			layout.NewGridLayout(1),
-			gui.currentDomain.StatusLines[1],
+			report.currentDomain.StatusLines[1],
 		)
 
 		current.AddObject(fyne.NewContainerWithLayout(
@@ -48,7 +48,7 @@ func (gui *ProgressGUI) updateLayout() {
 	}
 
 	done := fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(1000, 80)))
-	if gui.Done {
+	if report.done {
 		done.AddObject(fyne.NewContainerWithLayout(
 			layout.NewGridLayout(1),
 			widget.NewLabelWithStyle("--- Backup Finished ---", fyne.TextAlignCenter, fyne.TextStyle{}),
@@ -56,7 +56,7 @@ func (gui *ProgressGUI) updateLayout() {
 	}
 
 	completed := fyne.NewContainerWithLayout(layout.NewVBoxLayout())
-	for _, domain := range gui.domains {
+	for _, domain := range report.domains {
 		if !domain.Completed {
 			continue
 		}
@@ -80,7 +80,7 @@ func (gui *ProgressGUI) updateLayout() {
 	bottom := fyne.NewContainerWithLayout(
 		layout.NewFixedGridLayout(fyne.NewSize(1000, 40)),
 		widget.NewButton("Close", func() {
-			gui.app.Quit()
+			report.app.Quit()
 		}),
 	)
 
@@ -97,9 +97,9 @@ func (gui *ProgressGUI) updateLayout() {
 	content.AddObject(scroll)
 	content.AddObject(bottom)
 	content.Resize(fyne.NewSize(1000, 675))
-	gui.window.SetContent(content)
+	report.window.SetContent(content)
 
-	for _, domain := range gui.domains {
+	for _, domain := range report.domains {
 		domain.Name.Show()
 		domain.Elapsed.Show()
 		domain.ETA.Show()

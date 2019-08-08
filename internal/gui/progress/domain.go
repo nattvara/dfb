@@ -25,9 +25,9 @@ type DomainProgress struct {
 	StatusLines []*widget.Label
 }
 
-// StartNewDomain will add a new DomainProgress to gui's domains, subsequent status
+// StartNewDomain will add a new DomainProgress to report's domains, subsequent status
 // and summary messages will refer to this domain until a new domain is started
-func (gui *ProgressGUI) StartNewDomain(groupName string, domainName string) {
+func (report *Report) StartNewDomain(groupName string, domainName string) {
 	domain := d.Load(
 		domainName,
 		groupName,
@@ -47,14 +47,14 @@ func (gui *ProgressGUI) StartNewDomain(groupName string, domainName string) {
 		},
 	}
 	domainProgress.ProgressBar.Max = 100
-	gui.domains = append([]*DomainProgress{domainProgress}, gui.domains...)
-	gui.currentDomain = domainProgress
-	gui.updateLayout()
+	report.domains = append([]*DomainProgress{domainProgress}, report.domains...)
+	report.currentDomain = domainProgress
+	report.updateLayout()
 }
 
-// StartNewEmptyDomain will add a new DomainProgress to gui's domains, however this
+// StartNewEmptyDomain will add a new DomainProgress to report's domains, however this
 // domain won't be able to receive any status or summary messages
-func (gui *ProgressGUI) StartNewEmptyDomain(groupName string, domainName string) {
+func (report *Report) StartNewEmptyDomain(groupName string, domainName string) {
 	domainProgress := &DomainProgress{
 		Domain:      d.Domain{},
 		Completed:   false,
@@ -70,7 +70,7 @@ func (gui *ProgressGUI) StartNewEmptyDomain(groupName string, domainName string)
 		},
 	}
 	domainProgress.ProgressBar.Max = 100
-	gui.domains = append(gui.domains, domainProgress)
-	gui.currentDomain = domainProgress
-	gui.updateLayout()
+	report.domains = append(report.domains, domainProgress)
+	report.currentDomain = domainProgress
+	report.updateLayout()
 }
