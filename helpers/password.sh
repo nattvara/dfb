@@ -24,9 +24,9 @@ verify_password() {
     repo_path="$2"
 
     if echo "$password" | restic -r "$repo_path" key list 2> /dev/null 1> /dev/null; then
-        terminal-notifier -group "dfb" -title "dfb" -subtitle "Backup" -message "Password correct, performing backup" -sender "com.example.dfb" > /dev/null
+        terminal-notifier -group "dfb" -title "dfb" -subtitle "Backup" -message "Password correct" -sender "com.example.dfb" > /dev/null
     else
-        terminal-notifier -group "dfb" -title "dfb" -subtitle "Backup" -message "invalid password for $repo_path" -sender "com.example.dfb" > /dev/null
+        terminal-notifier -group "dfb" -title "dfb" -subtitle "Backup" -message "Invalid password for $repo_path" -sender "com.example.dfb" > /dev/null
         exit 1
     fi
 }
