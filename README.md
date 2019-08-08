@@ -251,6 +251,4 @@ Options:
 
 ## License
 
-MIT © Ludwig Kristoffersson
-
-See [LICENSE file](LICENSE) for more information.
+__MIT License__, see [LICENSE file](LICENSE).
