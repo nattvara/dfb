@@ -222,7 +222,7 @@ print_domain_unavailable() {
     fi
     printf "\033[50D\033[0C backing up $domain "
     tput setaf 8;
-    printf "\033[50D\033[50Cunavailable \n"
+    printf "\033[50D\033[60Cunavailable \n"
     tput sgr0;
 }
 
@@ -233,7 +233,7 @@ print_not_this_repo() {
     fi
     printf "\033[50D\033[0C backing up $domain "
     tput setaf 8;
-    printf "\033[50D\033[50Cnot backed up to $repo_name \n"
+    printf "\033[50D\033[60Cnot backed up to $repo_name \n"
     tput sgr0;
 }
 
