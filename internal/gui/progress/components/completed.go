@@ -88,11 +88,11 @@ func (c *Completed) AddCompletedDomain(name string, duration string, processed s
 	listIndex := int(math.Mod(float64(len(c.domains)-1), float64(ListLength)))
 	if listIndex == 0 && len(c.domains) > ListLength-1 {
 		c.pageCount++
-		c.updateLabel()
 		if shouldUpdateList {
 			c.currentPage++
 			c.clearList()
 		}
+		c.updateLabel()
 	}
 
 	if !shouldUpdateList {
