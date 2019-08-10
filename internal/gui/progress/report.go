@@ -56,6 +56,7 @@ func (report *Report) LoadUI(app fyne.App) {
 
 // StartNewDomain starts the backup of given domain of given group
 func (report *Report) StartNewDomain(groupName string, domainName string) {
+	report.StatusComponent.Reset()
 	domain := d.Load(
 		domainName,
 		groupName,

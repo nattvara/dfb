@@ -120,6 +120,18 @@ func (c *Status) Clear() {
 	c.SetSecondStatusLine("")
 }
 
+// Reset resets the status to it's initial state
+func (c *Status) Reset() {
+	c.title.SetText("")
+	c.elapsed.SetText("")
+	c.eta.SetText("")
+	c.filesDone.SetText("")
+	c.bytesDone.SetText("")
+	c.progressBar.SetValue(0)
+	c.SetFirstStatusLine("")
+	c.SetSecondStatusLine("")
+}
+
 // SetStatusLinesFromCurrentFiles updates status lines from slice of file paths
 func (c *Status) SetStatusLinesFromCurrentFiles(currentFiles []string) {
 	if len(currentFiles) == 1 {
