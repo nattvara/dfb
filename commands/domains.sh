@@ -57,8 +57,10 @@ list_domains() {
 
         find . -type f -print0 | sort -z |
         while IFS= read -r -d '' domain; do
+            repos=$(cat "$domain" | ggrep -E 'repos:' | egrep -o '[^:]+$' | tr -d '[:space:]')
             domain="$(echo $domain | sed -e 's/^\.\///g')"
-            echo "$group:$domain"
+            printf "$group:$domain"
+            printf "\033[50D\033[60C$repos \n"
         done
     done
 }
