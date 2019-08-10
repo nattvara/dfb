@@ -41,6 +41,6 @@ func main() {
 		}
 	}()
 
-	go report.ListenForMessages(messages)
+	go report.MessageReceiver.ListenForMessages(messages)
 	app.Run()
 }

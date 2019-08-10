@@ -1,114 +1,60 @@
 package progress
 
 import (
-	"fmt"
-
 	"github.com/nattvara/dfb/internal/restic"
 )
 
-// ListenForMessages will listen for restic messages on given channel for report
-func (report *Report) ListenForMessages(channel chan restic.Message) {
+// MessageReceiver receives json messages and updates Report accordingly
+type MessageReceiver struct {
+	Report *Report
+}
+
+// ListenForMessages will listen for restic messages on given channel
+func (receiver *MessageReceiver) ListenForMessages(channel chan restic.Message) {
 	for {
 		msg := <-channel
 		switch msg.Type {
 		case "dfb":
 			dfb := restic.DFBMessageFromString(msg.Body)
-			report.handleDFBMessage(dfb)
+			receiver.handleDFBMessage(dfb)
 		case "status":
 			status := restic.StatusMessageFromString(msg.Body)
-			report.handleStatusMessage(status)
+			receiver.handleStatusMessage(status)
 		case "summary":
 			summary := restic.SummaryMessageFromString(msg.Body)
-			report.handleSummaryMessage(summary)
+			receiver.handleSummaryMessage(summary)
 		}
 	}
 }
 
-func (report *Report) handleStatusMessage(msg restic.StatusMessage) {
-	if report.currentDomain.Completed {
-		return
-	}
-	report.currentDomain.Elapsed.SetText("Elapsed: " + msg.GetElapsedTime())
-	report.currentDomain.ETA.SetText("ETA: " + msg.GetETA())
-	report.currentDomain.Files.SetText(fmt.Sprintf("Files: %v/%v", msg.FilesDone, msg.TotalFiles))
-	report.currentDomain.Data.SetText(fmt.Sprintf("%s/%s", msg.GetBytesDoneString(), msg.GetTotalBytesString()))
-	report.currentDomain.ProgressBar.SetValue(msg.GetProcent())
-
-	if len(msg.CurrentFiles) == 1 {
-		report.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 100))
-		report.currentDomain.StatusLines[1].SetText("")
-	} else if len(msg.CurrentFiles) == 2 {
-		report.currentDomain.StatusLines[0].SetText(truncateString(msg.CurrentFiles[0], 100))
-		report.currentDomain.StatusLines[1].SetText(truncateString(msg.CurrentFiles[1], 100))
-	} else {
-		report.currentDomain.StatusLines[0].SetText("")
-		report.currentDomain.StatusLines[1].SetText("")
-	}
+func (receiver *MessageReceiver) handleStatusMessage(msg restic.StatusMessage) {
+	receiver.Report.StatusComponent.SetElapsed(msg.GetElapsedTime())
+	receiver.Report.StatusComponent.SetETA(msg.GetETA())
+	receiver.Report.StatusComponent.SetFilesDone(msg.FilesDone, msg.TotalFiles)
+	receiver.Report.StatusComponent.SetBytesDone(msg.GetBytesDoneString(), msg.GetTotalBytesString())
+	receiver.Report.StatusComponent.SetProgress(msg.GetProcent())
+	receiver.Report.StatusComponent.SetStatusLinesFromCurrentFiles(msg.CurrentFiles)
 }
 
-func truncateString(str string, max int) string {
-	out := str
-	if len(str) > max {
-		if max > 3 {
-			max -= 3
-		}
-		out = str[0:max] + "..."
-	}
-	return out
+func (receiver *MessageReceiver) handleSummaryMessage(msg restic.SummaryMessage) {
+	receiver.Report.StatusComponent.SetProgress(100)
+	receiver.Report.CompleteCurrentDomain(msg)
 }
 
-func (report *Report) handleSummaryMessage(msg restic.SummaryMessage) {
-	report.currentDomain.Completed = true
-	report.currentDomain.Elapsed.SetText("Took: " + msg.GetDurationString())
-	report.currentDomain.Data.SetText("Processed: " + msg.GetDataProcessedString())
-	report.currentDomain.Files.SetText("Added: " + msg.GetDataAddedString())
-	report.currentDomain.ProgressBar.SetValue(100)
-	report.currentDomain.StatusLines[0].SetText("")
-	report.currentDomain.StatusLines[1].SetText("")
-}
-
-func (report *Report) handleDFBMessage(msg restic.DFBMessage) {
+func (receiver *MessageReceiver) handleDFBMessage(msg restic.DFBMessage) {
 	switch msg.Action {
 	case "begin":
-		if report.currentDomain != nil {
-			report.currentDomain.Completed = true
-		}
-		report.StartNewDomain(msg.Group, msg.Domain)
+		receiver.Report.StartNewDomain(msg.Group, msg.Domain)
 	case "unavailable":
-		if report.currentDomain != nil {
-			report.currentDomain.Completed = true
-		}
-		report.StartNewEmptyDomain(msg.Group, msg.Domain)
-		report.currentDomain.Elapsed.SetText("Took: 0 s")
-		report.currentDomain.Data.SetText("Unavailable")
-		report.currentDomain.Files.SetText("Added: 0 B")
+		receiver.Report.StartNewDomain(msg.Group, msg.Domain)
+		receiver.Report.CompleteUnavailibleDomain(msg.Group, msg.Domain, "Unavailable")
 	case "gathering_stats":
-		if report.currentDomain == nil {
-			return
-		}
-		report.currentDomain.Completed = true
-		report.currentDomain.StatusLines[0].SetText("gathering stats for " + msg.Domain)
-		report.updateLayout()
+		receiver.Report.StatusComponent.SetFirstStatusLine("gathering stats for " + msg.Domain)
 	case "gathering_stats_done":
-		if report.currentDomain == nil {
-			return
-		}
-		report.currentDomain.Completed = true
-		report.currentDomain.StatusLines[1].SetText("done.")
-		report.updateLayout()
-	case "done":
-		if report.currentDomain == nil {
-			return
-		}
-		report.done = true
-		report.updateLayout()
+		receiver.Report.StatusComponent.SetSecondStatusLine("done.")
 	case "not_this_repo":
-		if report.currentDomain == nil {
-			return
-		}
-		report.currentDomain.Elapsed.SetText("Took: 0 s")
-		report.currentDomain.Data.SetText("Skipped")
-		report.currentDomain.Files.SetText("Added: 0 B")
-		report.updateLayout()
+		receiver.Report.CompleteUnavailibleDomain(msg.Group, msg.Domain, "Not this repo")
+	case "done":
+		receiver.Report.Done()
 	}
 }
