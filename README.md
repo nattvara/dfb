@@ -60,16 +60,16 @@ dfb --version
 
 ### Structuring the filesystem
 
-The purpose of dfb is to keep domains separate and allow for backup, recovery and deletion of backups easy and isolated. Hence the filesystem must be organized in such a way.
+One of the purposes of dfb is to keep snapshots of domains separate, so that recovery and deletion of backups are easy and isolated. Hence the filesystem must be organized in such a way.
 
 ```console
 ~
 ├── some-project
 ├── someorg-some-project -> /Volumes/some_disk/someorg-some-project
 ├── someorg-some-other-project
+├── Library
 ├── Desktop     # directory that shouldn't be backed up
 ├── Downloads   # directory that shouldn't be backed up
-├── Library     # directory that should be backed up, but not renamed
 └── ...
 ```
 
@@ -85,7 +85,7 @@ restic -r [RESTIC REPO] init
 
 ### Groups
 
-Domains should be organized by groups. A group contians a number of domains, and restic repositories to backup those domains to.
+Domains are backed up in groups. A group contians a number of domains, and restic repositories to backup those domains to.
 
 Creating groups is done with the `groups` command.
 
@@ -139,7 +139,7 @@ $ dfb backup demo demo-repo
 
 #### `--gui`
 
-With the `---gui` flag progress will be displayed in a gui window. This is useful if the backup is started from a cron job or something similar.
+With the `---gui` flag, progress will be displayed in a gui window. This is useful if the backup is started from a cron job or similar.
 
 ![Backup with --gui flag](docs/images/progress-gui.png)
 
@@ -191,7 +191,7 @@ dfb stats demo demo-repo repo-disk-space --time-unit days --time-length 34
 
 ![Example usage of the stats command](docs/images/stats-repo-disk-space-example.png)
 
-#### Full list of options for the stats command
+#### Full list of options for the `stats` command
 
 ```console
 Usage:
