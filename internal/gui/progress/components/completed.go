@@ -18,9 +18,10 @@ const (
 type Completed struct {
 	container *fyne.Container
 
-	list    *fyne.Container
-	items   []*item
-	domains []map[string]string
+	list         *fyne.Container
+	items        []*item
+	domains      []map[string]string
+	addedDomains map[string]int
 
 	controls    *fyne.Container
 	next        *widget.Button
@@ -33,6 +34,7 @@ type Completed struct {
 // GetNewContainer returns a fyne container with the necessary widgets
 // to display list of snapshots and various metrics
 func (c *Completed) GetNewContainer() *fyne.Container {
+	c.addedDomains = make(map[string]int)
 	c.next = widget.NewButton("Next", c.Next)
 	c.previous = widget.NewButton("Previous", c.Previous)
 	c.label = widget.NewLabelWithStyle(
@@ -69,6 +71,11 @@ func (c *Completed) GetNewContainer() *fyne.Container {
 // AddCompletedDomain adds a completed domain to the list of completed domains,
 // if necessary the list will increment to not show more items than ListLength
 func (c *Completed) AddCompletedDomain(name string, duration string, processed string, added string) {
+	if _, ok := c.addedDomains[name]; ok {
+		return
+	}
+	c.addedDomains[name] = len(c.domains)
+
 	domain := map[string]string{
 		"name":      fmt.Sprintf("%v %s", len(c.domains)+1, name),
 		"duration":  duration,
