@@ -50,6 +50,7 @@ func (receiver *MessageReceiver) handleDFBMessage(msg restic.DFBMessage) {
 		receiver.Report.CompleteUnavailibleDomain(msg.Group, msg.Domain, "Unavailable")
 	case "gathering_stats":
 		receiver.Report.StatusComponent.SetFirstStatusLine("gathering stats for " + msg.Domain)
+		receiver.Report.StatusComponent.SetSecondStatusLine("")
 	case "gathering_stats_done":
 		receiver.Report.StatusComponent.SetSecondStatusLine("done.")
 	case "not_this_repo":
