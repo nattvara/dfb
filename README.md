@@ -19,7 +19,7 @@ The tool is written in bash with the parts that require higher performance writt
 #### Install dependencies
 
 ```bash
-brew install restic
+brew install restic go expect jq grep coreutils terminal-notifier
 ```
 
 #### Install FUSE for macOS
@@ -32,20 +32,9 @@ brew tap homebrew/cask
 brew cask install osxfuse
 ```
 
-#### Install dependencies
+#### Install fyne
 
 ```bash
-brew install grep
-brew install jq
-brew install coreutils
-brew install terminal-notifier
-brew install expect
-```
-
-#### Install go and fyne
-
-```bash
-brew install go
 go get fyne.io/fyne/cmd/fyne
 ```
 
