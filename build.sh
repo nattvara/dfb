@@ -24,6 +24,7 @@ cat commands/stats.sh >> $OUT && printf "\n" >> $OUT
 cat commands/fsd.sh >> $OUT && printf "\n" >> $OUT
 cat helpers/password.sh >> $OUT && printf "\n" >> $OUT
 cat helpers/validation.sh >> $OUT && printf "\n" >> $OUT
+cat helpers/lock.sh >> $OUT && printf "\n" >> $OUT
 
 echo 'main "$@"' >> $OUT
 

@@ -71,7 +71,7 @@ func PrintStatusMessage(msg restic.StatusMessage, domain d.Domain) int {
 	message := fmt.Sprintf("  backing up %s", domain.Name)
 	tm.Printf(message)
 
-	tm.MoveCursorForward(50 - len(message))
+	tm.MoveCursorForward(60 - len(message))
 	tm.Print(msg.GetProcentString())
 	if msg.SecondsRemaining != 0 {
 		tm.Print(" " + msg.GetStatusString())
@@ -99,7 +99,7 @@ func PrintSummaryMessage(msg restic.SummaryMessage, domain d.Domain) int {
 
 	message := fmt.Sprintf("  backing up %s", domain.Name)
 	tm.Printf(message)
-	tm.MoveCursorForward(50 - len(message))
+	tm.MoveCursorForward(60 - len(message))
 	tm.Printf("100%% ⏱  %s 💾 %s 📊 gathering stats... ", msg.GetDurationString(), msg.GetDataAddedString())
 
 	tm.Flush()

@@ -8,16 +8,29 @@
 
 recover() {
     verify_env
-    if [[ $2 == "help" ]] || [[ $2 == "" ]]; then
-        echo "Usage:"
-        echo "  $PROGRAM recover [group] [repo]"
-        exit
-    fi
+
+    # options
+    force=false
+
+    for var in "$@"; do
+        if [[ "$var" =~ ^-h|--help$  ]]; then
+            print_recover_help
+            exit
+        elif [[ "$var" =~ ^--force$  ]]; then
+            force=true
+        fi
+    done
+
     group=$2
     validate_group $group
     repo_name=$3
     validate_repo $group $repo_name
     repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
+
+    if [ "$force" = false ]; then
+        check_lock
+        lock_dfb "recover"
+    fi
 
     promt_for_password
     verify_password $password $repo_path
@@ -38,6 +51,7 @@ recover() {
         echo "otherwise, please investigate mountpoint at"
         echo $mountpoint
         tput sgr0;
+        unlock_dfb
         exit 1
     else
         echo "successfully unmounted"
@@ -59,4 +73,23 @@ recover() {
         echo $mountpoint
         tput sgr0;
     fi
+
+    unlock_dfb
+}
+
+print_recover_help() {
+    cat <<HEREDOC
+Recover files from a group.
+
+The recover command will mount given restic repo for a group, once
+mounted the dfb agent will create a __recover__ directory under each
+domain that contains earlier versions of all the backed up files in the repo.
+
+Usage:
+  ${PROGRAM} recover [group] [repo]
+
+Options:
+  --force       Force recover to start, even if dfb is locked.
+  -h --help     Show this screen.
+HEREDOC
 }
