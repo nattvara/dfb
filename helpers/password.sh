@@ -11,10 +11,12 @@ END
     )
     if [ -z "$(echo ${password//[[:blank:]]/})" ]; then
         terminal-notifier -group "dfb" -title "dfb" -subtitle "Backup" -message "password cannot be empty" -sender "com.example.dfb" > /dev/null
+        unlock_dfb
         exit 1
     fi
     if [[ "$password" =~ "User cancelled" ]]; then
         terminal-notifier -group "dfb" -title "dfb" -subtitle "Backup" -message "no password entered" -sender "com.example.dfb" > /dev/null
+        unlock_dfb
         exit
     fi
 }
@@ -27,6 +29,7 @@ verify_password() {
         terminal-notifier -group "dfb" -title "dfb" -subtitle "Backup" -message "Password correct" -sender "com.example.dfb" > /dev/null
     else
         terminal-notifier -group "dfb" -title "dfb" -subtitle "Backup" -message "Invalid password for $repo_path" -sender "com.example.dfb" > /dev/null
+        unlock_dfb
         exit 1
     fi
 }
