@@ -102,6 +102,28 @@ $ dfb groups add-repo demo
 # Enter repo path: [RESTIC REPO]
 ```
 
+#### Full list of options for the `groups` command
+
+```console
+$ dfb groups --help
+Domain groups.
+
+A group contians a number of domains, and restic repositories
+to backup those domains to.
+
+Usage:
+  dfb groups <subcommand> [parameters]
+
+Available Commands:
+  ls        List groups.
+  add       Add new group.
+  repos     List restic repos for a group.
+  add-repo  Add restic repo for a group.
+
+Options:
+  -h --help     Show this screen.
+```
+
 ### Domains
 
 Adding domains to a group for backup is done with the `domains` command.
@@ -121,11 +143,33 @@ dfb domains add demo ~/demo-a-symlinked-domain /Volumes/[SOME VOLUME]/demo-a-sym
 
 In the background dfb:s filesystem agent will detect when the volume is availible and create a symkink to the real directory in the users `$HOME` directory.
 
+#### Full list of options for the `domains` command
+
+```console
+$ dfb domains --help
+Domains to backup.
+
+A domain is a directory in the home directory to backup,
+this could be a symlink to some other directory on another
+volume.
+
+Usage:
+  dfb domains <subcommand> [parameters]
+
+Available Commands:
+  ls        List domains.
+  add       Add new domain.
+  rm        Remove a domain.
+
+Options:
+  -h --help     Show this screen.
+```
+
 ### Backup
 
-Backups are done with the `backup` commands.
+Backups are done with the `backup` command.
 
-Backup will launch a macOS dialogue to enter the password and subsequently take a snapshot of all domains that are availible (see [symlinked domains](#symlinked-domains)).
+Backup will launch a macOS dialogue to enter the password and subsequently take a snapshot of all domains that are *availible* (see [symlinked domains](#symlinked-domains)).
 
 ```console
 $ dfb backup demo demo-repo
@@ -149,9 +193,25 @@ With the `--confirm` flag a dialogue will promt the user for action before backu
 
 ![Backup with --confirm flag](docs/images/confirm-dialogue.png)
 
+#### Full list of options for the `backup` command
+
+```console
+$ dfb backup --help
+Backup a group of domains.
+
+Usage:
+  dfb backup [group] [repo]
+
+Options:
+  --gui         Show progress in a graphical user interface.
+  --confirm     Show a dialogue that the user have to confirm for backup to start. Useful if backup is started by a cron job.
+  --force       Force backup to start, even if dfb is locked.
+  -h --help     Show this screen.
+```
+
 ### Recovering files
 
-The `recover` command will run the `restic mount` command and mount a read-only filesystem with provided repo. In the background dfb will create aliases to a domains backups under the path `path/to/domain/__recover__` like the following.
+The `recover` command will run the `restic mount` command that mounts a read-only filesystem with provided repo. In the background dfb will create aliases to a domains backups under the path `path/to/domain/__recover__` like the following.
 
 ```console
 demo-some-project
@@ -177,6 +237,24 @@ demo-some-project
 ├── some-file.txt
 └── some-other-file.txt
 14 directories, 13 files
+```
+
+#### Full list of options for the `recover` command
+
+```console
+$ dfb recover --help
+Recover files from a group.
+
+The recover command will mount given restic repo for a group, once
+mounted the dfb agent will create a __recover__ directory under each
+domain that contains earlier versions of all the backed up files in the repo.
+
+Usage:
+  dfb recover [group] [repo]
+
+Options:
+  --force       Force recover to start, even if dfb is locked.
+  -h --help     Show this screen.
 ```
 
 ### Stats
@@ -212,6 +290,8 @@ Flags:
 ### All availible commands
 
 ```console
+$ dfb --help
+
 _________/\\\__________/\\\\\___/\\\________
  ________\/\\\________/\\\///___\/\\\________
   ________\/\\\_______/\\\_______\/\\\________
