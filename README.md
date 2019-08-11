@@ -102,7 +102,7 @@ $ dfb groups add-repo demo
 # Enter repo path: [RESTIC REPO]
 ```
 
-#### Full list of options for the `groups` command
+#### Available subcommands for the `groups` command
 
 ```console
 $ dfb groups --help
@@ -143,7 +143,7 @@ dfb domains add demo ~/demo-a-symlinked-domain /Volumes/[SOME VOLUME]/demo-a-sym
 
 In the background dfb:s filesystem agent will detect when the volume is availible and create a symkink to the real directory in the users `$HOME` directory.
 
-#### Full list of options for the `domains` command
+#### Available subcommands for the `domains` command
 
 ```console
 $ dfb domains --help
@@ -193,7 +193,7 @@ With the `--confirm` flag a dialogue will promt the user for action before backu
 
 ![Backup with --confirm flag](docs/images/confirm-dialogue.png)
 
-#### Full list of options for the `backup` command
+#### Available subcommands for the `backup` command
 
 ```console
 $ dfb backup --help
@@ -239,7 +239,7 @@ demo-some-project
 14 directories, 13 files
 ```
 
-#### Full list of options for the `recover` command
+#### Available subcommands for the `recover` command
 
 ```console
 $ dfb recover --help
