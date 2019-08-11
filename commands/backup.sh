@@ -11,6 +11,7 @@ backup() {
     # options
     gui=false
     confirm=false
+    force=false
 
     for var in "$@"; do
         if [[ "$var" =~ ^-h|--help$  ]]; then
@@ -20,6 +21,8 @@ backup() {
             gui=true
         elif [[ "$var" =~ ^--confirm$  ]]; then
             confirm=true
+        elif [[ "$var" =~ ^--force$  ]]; then
+            force=true
         fi
     done
 
@@ -30,6 +33,11 @@ backup() {
     repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
     domains_directory="$DFB_PATH/$group/domains"
     STATS_PATH="$DFB_PATH/$group/stats"
+
+    if [ "$force" = false ]; then
+        check_lock
+        lock_dfb "backup"
+    fi
 
     if [ "$confirm" = true ]; then
         confirm_backup_should_start $repo_name $group
@@ -85,6 +93,7 @@ backup() {
 
     terminal-notifier -group "dfb" -title "dfb" -subtitle "Done" -message "Backup of $group to $repo_name is done" -sender "com.example.dfb" -sound default > /dev/null
 
+    unlock_dfb
     printf "\n"
 }
 
@@ -93,11 +102,12 @@ print_backup_help() {
 Backup a group of domains.
 
 Usage:
-  ${PROGRAM} [group] [repo]
+  ${PROGRAM} backup [group] [repo]
 
 Options:
   --gui         Show progress in a graphical user interface.
   --confirm     Show a dialogue that the user have to confirm for backup to start. Useful if backup is started by a cron job.
+  --force       Force backup to start, even if dfb is locked.
   -h --help     Show this screen.
 HEREDOC
 }
@@ -111,6 +121,7 @@ END
     )
     if [ "$script_result" != "button returned:Proceed" ]; then
         terminal-notifier -group "dfb" -title "dfb" -subtitle "Aborted" -message "Backup of $group was aborted" -sender "com.example.dfb" > /dev/null
+        unlock_dfb
         exit 1
     fi
 }
