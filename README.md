@@ -1,20 +1,22 @@
 # Domain based Filesystem Backup
 
-A backup approach and tool built on top of [restic](https://github.com/restic/restic) for macOS.
+A backup approach and tool for macOS built on top of [restic](https://github.com/restic/restic).
 
 ## About
 
-Domain based Filesystem Backup (dfb) is backup of files organized by domains. A domain is arbitrary, but should be as narrow as possible but not to narrow. A single project such as a source code repository, documents for a project, or something longerlived such as a `.photoslibrary`.
+Domain based Filesystem Backup (dfb) is backup of files, organized by domains. A domain is arbitrary, but should be as narrow as possible, while not to narrow. A single project such as a source code repository, documents for a project, or something longerlived such as a `.photoslibrary`.
 
-Domains also include special directories such as `~/Library` and files in home directory such as `~/.zshrc` and `~/.gitconfig`.
+Domains can also include special directories such as `~/Library` and files in home directory such as `~/.zshrc` and `~/.gitconfig`.
 
-The purpose of dfb is to allow for easier management of backups, better tools for monitoring backups that run in the background, easier recovery of backed up files, and easier retrival of useful stats about repos than a standalone restic installation provides.
+The purpose of dfb is to provide handy monitoring tools for backups that run in the background, convenient recovery of backed up files, management of backup locations and exceptions for individual domains, and easier retrival of useful stats about the backups than a standalone restic installation provides.
+
+The tool is written in bash with the parts that require higher performance written in go.
 
 ## Installation
 
 ### Build and install locally
 
-#### Install [restic](https://github.com/restic/restic)
+#### Install dependencies
 
 ```bash
 brew install restic
