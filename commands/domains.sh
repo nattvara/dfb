@@ -140,11 +140,6 @@ remove_domain() {
     validate_group $group
     validate_domain $group $domain
 
-
-    if [[ $symlink != "" ]]; then
-        create_symlink $domain $symlink
-    fi
-
     echo "deleting record of domain $domain"
     rm "$DFB_PATH/$group/domains/$domain"
 
