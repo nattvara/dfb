@@ -88,7 +88,7 @@ add_domain() {
     fi
 
     if [[ $symlink != "" ]]; then
-        create_symlink $domain $symlink
+        create_symlink $domain "$symlink"
     fi
 
     content=$(cat <<CONTENT
@@ -124,7 +124,7 @@ create_symlink() {
         exit 1
     fi
 
-    ln -s $symlink "$symlinks/$domain"
+    ln -s "$symlink" "$symlinks/$domain"
     ln -s "$symlinks/$domain" "$HOME/$domain"
 }
 
