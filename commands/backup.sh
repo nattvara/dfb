@@ -128,17 +128,17 @@ END
 
 backup_domain() {
     domain_path=$(cat "./$domain" | ggrep -E 'path:' | egrep -o '[^:]+$' | tr -d '[:space:]')
-    symlink=$(cat "./$domain" | ggrep -E 'symlink:' | egrep -o '[^:]+$' | tr -d '[:space:]')
+    symlink=$(cat "./$domain" | ggrep -E 'symlink:' | egrep -o '[^:]+$' | awk '{$1=$1;print}')
     exclusions=$(cat "./$domain" | ggrep -E 'exclusions:' | egrep -o '[^:]+$' | tr " " "\n")
     repos=$(cat "./$domain" | ggrep -E 'repos:' | egrep -o '[^:]+$' | tr -d '[:space:]')
 
-    if [[ $symlink != "" ]]; then
-        if [ ! -d $symlink ]; then
+    if [[ "$symlink" != "" ]]; then
+        if [ ! -d "$symlink" ]; then
             print_domain_unavailable $domain
             return
         fi
 
-        cd $symlink
+        cd "$symlink"
     elif [ -f $domain_path ]; then
         parent_dir=$(dirname $domain_path)
         if [ ! -d $parent_dir ]; then
