@@ -1,12 +1,16 @@
 package progress
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/nattvara/dfb/internal/restic"
 )
 
 // MessageReceiver receives json messages and updates Report accordingly
 type MessageReceiver struct {
-	Report *Report
+	Report            *Report
+	WhitelistedErrors map[string]struct{}
 }
 
 // ListenForMessages will listen for restic messages on given channel
@@ -23,6 +27,10 @@ func (receiver *MessageReceiver) ListenForMessages(channel chan restic.Message) 
 		case "summary":
 			summary := restic.SummaryMessageFromString(msg.Body)
 			receiver.handleSummaryMessage(summary)
+		default:
+			if _, ok := receiver.WhitelistedErrors[msg.Body]; !ok {
+				fmt.Fprintln(os.Stderr, msg.Body)
+			}
 		}
 	}
 }

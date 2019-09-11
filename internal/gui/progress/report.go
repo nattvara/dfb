@@ -17,7 +17,15 @@ import (
 func New(app fyne.App) *Report {
 	report := &Report{}
 	report.app = app
-	report.MessageReceiver = &MessageReceiver{Report: report}
+
+	whitelist := map[string]struct{}{
+		"":                         {},
+		"read password from stdin": {},
+	}
+	report.MessageReceiver = &MessageReceiver{
+		Report:            report,
+		WhitelistedErrors: whitelist,
+	}
 	return report
 }
 
