@@ -17,6 +17,9 @@ domains() {
     elif [ "${2:-}" == "ls" ]
     then
         list_domains
+    elif [ "${2:-}" == "not-added" ]
+    then
+        list_not_added "$3"
     elif [ "${2:-}" == "rm" ]
     then
         remove_domain "$3" "$4"
@@ -37,9 +40,10 @@ Usage:
   ${PROGRAM} domains <subcommand> [parameters]
 
 Available Commands:
-  ls        List domains.
-  add       Add new domain.
-  rm        Remove a domain.
+  ls            List domains.
+  not-added     List directories not added as domains in home directory.
+  add           Add new domain.
+  rm            Remove a domain.
 
 Options:
   -h --help     Show this screen.
@@ -62,6 +66,26 @@ list_domains() {
             printf "$group:$domain"
             printf "\033[50D\033[60C$repos \n"
         done
+    done
+}
+
+list_not_added() {
+    if [[ $1 == "help" ]]; then
+        echo "Usage:"
+        echo "  $ $PROGRAM domains not-added [group]"
+        exit
+    fi
+    group=$1
+
+    printf "Directories not backed up: \n\n"
+
+    cd "$HOME"
+    find . -print0 -maxdepth 1 | sort -z |
+    while IFS= read -r -d '' file; do
+        domain="$(echo $file | sed -e 's/^\.\///g')"
+        if [ ! -f "$DFB_PATH/$group/domains/$domain" ]; then
+            printf "~/$domain\n"
+        fi
     done
 }
 
