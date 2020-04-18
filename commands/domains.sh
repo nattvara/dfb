@@ -124,8 +124,8 @@ create_symlink() {
         exit 1
     fi
 
-    ln -s "$symlink" "$symlinks/$domain"
-    ln -s "$symlinks/$domain" "$HOME/$domain"
+    ln -vs "$symlink" "$symlinks/$domain"
+    ln -vs "$symlinks/$domain" "$HOME/$domain"
 }
 
 remove_domain() {
