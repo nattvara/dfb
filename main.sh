@@ -32,6 +32,9 @@ main() {
     elif [ "${1:-}" == "recover" ]
     then
         recover "$@"
+    elif [ "${1:-}" == "recover-domain" ]
+    then
+        recover_domain "$@"
     elif [ "${1:-}" == "fsd" ]
     then
         fsd "$@"
@@ -62,12 +65,13 @@ Usage:
   ${PROGRAM} <command> <subcommand> [parameters]
 
 Available Commands:
-  groups      Group commands.
-  domain      Domain commands.
-  backup      Backup a group of domains to a repo.
-  recover     Mount backed up versions of domains for recovery.
-  fsd         Control the filesystem agent.
-  stats       Make a chart for a backup metric.
+  groups            Group commands.
+  domain            Domain commands.
+  backup            Backup a group of domains to a repo.
+  recover           Mount backed up versions of domains for recovery.
+  recover-domain    Recover a single domain.
+  fsd               Control the filesystem agent.
+  stats             Make a chart for a backup metric.
 
 Options:
   -h --help     Show this screen.

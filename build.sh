@@ -20,6 +20,7 @@ cat commands/groups.sh >> $OUT && printf "\n" >> $OUT
 cat commands/domains.sh >> $OUT && printf "\n" >> $OUT
 cat commands/backup.sh >> $OUT && printf "\n" >> $OUT
 cat commands/recover.sh >> $OUT && printf "\n" >> $OUT
+cat commands/recover-domain.sh >> $OUT && printf "\n" >> $OUT
 cat commands/stats.sh >> $OUT && printf "\n" >> $OUT
 cat commands/fsd.sh >> $OUT && printf "\n" >> $OUT
 cat helpers/password.sh >> $OUT && printf "\n" >> $OUT
