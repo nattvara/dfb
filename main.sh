@@ -86,10 +86,11 @@ verify_env() {
         exit 1
     fi
 
-    if [ ! -d "/Library/Filesystems/osxfuse.fs" ]; then
-        echo "FUSE for macOS is not installed, visit https://github.com/osxfuse/osxfuse"
-        exit 1
-    fi
+    # https://github.com/restic/restic/issues/3096
+    # if [ ! -d "/Library/Filesystems/osxfuse.fs" ]; then
+    #     echo "FUSE for macOS is not installed, visit https://github.com/osxfuse/osxfuse"
+    #     exit 1
+    # fi
 
     if [ "$(command -v ggrep)" == "" ]; then
         echo "GNU grep is not installed, run: brew install grep"
