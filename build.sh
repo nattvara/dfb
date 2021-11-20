@@ -33,10 +33,10 @@ chmod +x $OUT
 echo "done."
 printf "compiling binaries... "
 
-go build -o ./build/dfb-progress-parser -i ./tools/progress-parser/cmd.go
-FYNE_FONT=/Applications/dfb.app/Contents/Resources/fonts/Lato-Black.ttf go build -o ./build/dfb-progress-parser-gui -i ./tools/progress-parser-gui/cmd.go
-go build -o ./build/dfb-stats -i ./tools/stats/cmd.go
-go build -o ./build/dfb-fsd -i ./agents/fsd.go
+go build -o ./build/dfb-progress-parser ./tools/progress-parser/cmd.go
+FYNE_FONT=/Applications/dfb.app/Contents/Resources/fonts/Lato-Black.ttf go build -o ./build/dfb-progress-parser-gui ./tools/progress-parser-gui/cmd.go
+go build -o ./build/dfb-stats ./tools/stats/cmd.go
+go build -o ./build/dfb-fsd ./agents/fsd.go
 
 echo "done."
 printf "packaging application... "

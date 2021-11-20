@@ -12,37 +12,43 @@ fi
 
 if [ -d $app_path ]; then
     echo "removing old version"
-    rm -r $app_path
+    sudo rm -r $app_path
+fi
+
+if [ ! -d dfb.app ]; then
+    echo "no build of dfb exists at $(pwd)/dfb.app"
+    echo "please build dfb before installing."
+    exit 1
 fi
 
 printf "moving files... "
 mv dfb.app /Applications
 
 if [ -f "$symlink_target/dfb" ]; then
-    rm "$symlink_target/dfb"
+    sudo rm "$symlink_target/dfb"
 fi
 
 if [ -f "$symlink_target/dfb-progress-parser" ]; then
-    rm "$symlink_target/dfb-progress-parser"
+    sudo rm "$symlink_target/dfb-progress-parser"
 fi
 
 if [ -f "$symlink_target/dfb-progress-parser-gui" ]; then
-    rm "$symlink_target/dfb-progress-parser-gui"
+    sudo rm "$symlink_target/dfb-progress-parser-gui"
 fi
 
 if [ -f "$symlink_target/dfb-stats" ]; then
-    rm "$symlink_target/dfb-stats"
+    sudo rm "$symlink_target/dfb-stats"
 fi
 
 if [ -f "$symlink_target/dfb-fsd" ]; then
-    rm "$symlink_target/dfb-fsd"
+    sudo rm "$symlink_target/dfb-fsd"
 fi
 
-ln -s "$bins_path/dfb" "$symlink_target/dfb"
-ln -s "$bins_path/dfb-progress-parser" "$symlink_target/dfb-progress-parser"
-ln -s "$bins_path/dfb-progress-parser-gui" "$symlink_target/dfb-progress-parser-gui"
-ln -s "$bins_path/dfb-stats" "$symlink_target/dfb-stats"
-ln -s "$bins_path/dfb-fsd" "$symlink_target/dfb-fsd"
+sudo ln -s "$bins_path/dfb" "$symlink_target/dfb"
+sudo ln -s "$bins_path/dfb-progress-parser" "$symlink_target/dfb-progress-parser"
+sudo ln -s "$bins_path/dfb-progress-parser-gui" "$symlink_target/dfb-progress-parser-gui"
+sudo ln -s "$bins_path/dfb-stats" "$symlink_target/dfb-stats"
+sudo ln -s "$bins_path/dfb-fsd" "$symlink_target/dfb-fsd"
 
 if [ ! -d "$HOME/.dfb.logs" ]; then
     echo "creating logs directory at $HOME/.dfb.logs"
