@@ -28,9 +28,6 @@ recover_domain() {
 
     repo_path=$(cat "$DFB_PATH/$group/repos/$repo_name")
 
-    echo "$group"
-    echo "$domain"
-    echo "$repo_path"
     promt_for_password
     verify_password $password $repo_path
 
