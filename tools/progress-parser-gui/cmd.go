@@ -18,7 +18,7 @@ import (
 	"github.com/nattvara/dfb/internal/gui/progress"
 	"github.com/nattvara/dfb/internal/restic"
 
-	"fyne.io/fyne/app"
+	"fyne.io/fyne/v2/app"
 )
 
 func main() {

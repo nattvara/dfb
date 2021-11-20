@@ -9,8 +9,8 @@ import (
 	"github.com/nattvara/dfb/internal/paths"
 	"github.com/nattvara/dfb/internal/restic"
 
-	"fyne.io/fyne"
-	"fyne.io/fyne/layout"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/layout"
 )
 
 // New creates and returns a new progress report
