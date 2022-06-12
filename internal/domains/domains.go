@@ -19,6 +19,7 @@ type Domain struct {
 	Path          string   // Path to domain eg. ~/domain ~/domain.somefile
 	TemporaryPath string   // If Path does not exist a temporary path will be created, this might differ from Path
 	ConfigPath    string   // Path to domain config ~/.dfb/[group]/domains/domain
+	Repositories  string   // Comma separated list of repositories
 	config        string   // Config content
 	Symlink       *Symlink // Path to real domain src if it's a symlinked domain
 }
@@ -32,12 +33,18 @@ func (domain *Domain) ParseConfig() {
 
 	domain.config = string(file)
 	domain.parsePathFromConfig()
+	domain.parseRepositoriesFromConfig()
 	domain.parseSymlinkFromConfig()
 }
 
 func (domain *Domain) parsePathFromConfig() {
 	var re = regexp.MustCompile(`(?m)path: (.*)\n`)
 	domain.Path = re.FindStringSubmatch(domain.config)[1]
+}
+
+func (domain *Domain) parseRepositoriesFromConfig() {
+	var re = regexp.MustCompile(`(?m)repos: (.*)\n`)
+	domain.Repositories = re.FindStringSubmatch(domain.config)[1]
 }
 
 func (domain *Domain) parseSymlinkFromConfig() {
