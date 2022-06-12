@@ -111,6 +111,14 @@ repos: %s
 	}
 }
 
+// DeleteConfigFile deletes the domains config file
+func (domain *Domain) DeleteConfigFile() {
+	err := os.Remove(domain.ConfigPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // CreatePathIfNotCreated will create the writable path if not created
 func (domain *Domain) CreatePathIfNotCreated() {
 	if !domain.PathExists() && !domain.IsSingleFileDomain() {

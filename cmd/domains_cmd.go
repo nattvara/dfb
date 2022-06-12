@@ -137,6 +137,37 @@ var addCmd = &cobra.Command{
 	},
 }
 
+var rmCmd = &cobra.Command{
+	Use:   "rm [group] [domain]",
+	Short: "Remove a domain",
+	Args:  cobra.MinimumNArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		group := groups.GetGroupFromString(args[0])
+		domainName := args[1]
+
+		if !group.DomainExists(domainName) {
+			log.Fatalf("Domain %s doesn't exists.", domainName)
+		}
+
+		domain := group.DomainsMap()[domainName]
+
+		fmt.Printf("deleting record of domain %s\n", domainName)
+		domain.DeleteConfigFile()
+
+		if domain.Symlink != nil {
+			fmt.Println("deleting symlink to real directory")
+			domain.Symlink.DeleteProxy()
+		}
+
+		fmt.Printf(`
+NOTE: this does not delete the actual directory
+      it will simply not be included in any more backups
+      neither will it be removed from previous backups
+      you will have to delete the data of "%s" yourself
+		`, domainName)
+	},
+}
+
 func init() {
 	RootCmd.AddCommand(domainsCmd)
 
@@ -148,4 +179,6 @@ func init() {
 
 	addCmd.Flags().StringVarP(&CreatSymlinkPath, "symlink", "s", "", "domain content is symlinked to another location")
 	domainsCmd.AddCommand(addCmd)
+
+	domainsCmd.AddCommand(rmCmd)
 }

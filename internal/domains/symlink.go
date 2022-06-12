@@ -23,6 +23,14 @@ func (symlink *Symlink) CreateProxy() {
 	os.Symlink(symlink.Source, symlink.Proxy)
 }
 
+// DeleteProxy deletes the symlink proxy
+func (symlink *Symlink) DeleteProxy() {
+	err := os.Remove(symlink.Proxy)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // Availible checks if the symlinks source content is availible
 func (symlink *Symlink) Availible() bool {
 	return paths.Exists(symlink.Source)
