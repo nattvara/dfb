@@ -12,7 +12,15 @@ import (
 type Symlink struct {
 	Source string  // The source of the domains symlink
 	Proxy  string  // Domains with symlinks have a symlink in ~/.dfb/[group]/symlinks/[domain] to Source that is never deleted or repointed
-	domain *Domain // Domain symlink belongs to
+	Domain *Domain // Domain symlink belongs to
+}
+
+// CreateProxy creates the proxy for the symlink
+func (symlink *Symlink) CreateProxy() {
+	if !symlink.Availible() {
+		log.Fatalf("could not find source for proxy at: %s", symlink.Source)
+	}
+	os.Symlink(symlink.Source, symlink.Proxy)
 }
 
 // Availible checks if the symlinks source content is availible
@@ -23,23 +31,23 @@ func (symlink *Symlink) Availible() bool {
 // LinkDomainToProxyIfNotLinked will link domain Path to symlink proxy
 // if domain path does not exist and is not temporary
 func (symlink *Symlink) LinkDomainToProxyIfNotLinked() {
-	if !symlink.domain.PathExists() {
-		log.Printf("[domain: %s] domain path did not exist, linking to source", symlink.domain.Name)
-		os.Symlink(symlink.Proxy, symlink.domain.Path)
+	if !symlink.Domain.PathExists() {
+		log.Printf("[domain: %s] domain path did not exist, linking to source", symlink.Domain.Name)
+		os.Symlink(symlink.Proxy, symlink.Domain.Path)
 		return
 	}
-	if paths.Exists(symlink.domain.TemporaryFlag()) {
-		log.Printf("[domain: %s] domain path was temporary, linking to source", symlink.domain.Name)
-		os.RemoveAll(symlink.domain.Path)
-		os.Symlink(symlink.Proxy, symlink.domain.Path)
+	if paths.Exists(symlink.Domain.TemporaryFlag()) {
+		log.Printf("[domain: %s] domain path was temporary, linking to source", symlink.Domain.Name)
+		os.RemoveAll(symlink.Domain.Path)
+		os.Symlink(symlink.Proxy, symlink.Domain.Path)
 	}
 }
 
 // UnlinkDomainFromProxyIfLinked will unlink domain from proxy will unlink
 // domain from its proxy if linked
 func (symlink *Symlink) UnlinkDomainFromProxyIfLinked() {
-	if paths.IsSymlink(symlink.domain.Path) {
-		log.Printf("[domain: %s] symlink source went away, removing symlink", symlink.domain.Name)
-		os.Remove(symlink.domain.Path)
+	if paths.IsSymlink(symlink.Domain.Path) {
+		log.Printf("[domain: %s] symlink source went away, removing symlink", symlink.Domain.Name)
+		os.Remove(symlink.Domain.Path)
 	}
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -15,10 +16,16 @@ import (
 var domainsCmd = &cobra.Command{
 	Use:   "domains",
 	Short: "Domain commands",
+	Long: `
+A domain is a directory in the home directory to backup,
+this could be a symlink to some other directory on another
+volume
+`,
 }
 
 var ListIncludeRepositories bool
 var ListIncludeSymlink bool
+var CreatSymlinkPath string
 
 var lsCmd = &cobra.Command{
 	Use:   "ls",
@@ -107,6 +114,29 @@ var notAddedCmd = &cobra.Command{
 	},
 }
 
+var addCmd = &cobra.Command{
+	Use:   "add [group] [domain]",
+	Short: "Add new domain",
+	Args:  cobra.MinimumNArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		group := groups.GetGroupFromString(args[0])
+		domainName := args[1]
+
+		if group.DomainExists(domainName) {
+			fmt.Println("Domain already exists.")
+			return
+		}
+
+		if CreatSymlinkPath != "" {
+			group.AddDomainWithNameAndSymlink(domainName, CreatSymlinkPath)
+		} else {
+			group.AddDomainWithName(domainName)
+		}
+
+		fmt.Println("Domain created.")
+	},
+}
+
 func init() {
 	RootCmd.AddCommand(domainsCmd)
 
@@ -115,4 +145,7 @@ func init() {
 	domainsCmd.AddCommand(lsCmd)
 
 	domainsCmd.AddCommand(notAddedCmd)
+
+	addCmd.Flags().StringVarP(&CreatSymlinkPath, "symlink", "s", "", "domain content is symlinked to another location")
+	domainsCmd.AddCommand(addCmd)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	d "github.com/nattvara/dfb/internal/domains"
 	"github.com/nattvara/dfb/internal/paths"
@@ -109,4 +110,57 @@ func (group *Group) DomainsMap() map[string]d.Domain {
 	}
 
 	return domains
+}
+
+// DomainExists returns boolean if domain exists inside the given Group
+func (group *Group) DomainExists(domain string) bool {
+	if _, ok := group.DomainsMap()[domain]; ok {
+		return true
+	}
+	return false
+}
+
+// AddDomainWithName adds a Domain with domainName
+func (group *Group) AddDomainWithName(domainName string) {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	domain := d.Domain{
+		Name:         domainName,
+		GroupName:    group.Name,
+		Path:         fmt.Sprintf("%s/%s", homedir, domainName),
+		ConfigPath:   fmt.Sprintf("%s/domains/%s", group.Path, domainName),
+		Repositories: "*",
+	}
+
+	domain.SaveConfig()
+}
+
+// AddDomainWithNameAndSymlink adds a Domain with domainName and a Symlink
+func (group *Group) AddDomainWithNameAndSymlink(domainName string, symlink string) {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := &d.Symlink{
+		Source: symlink,
+		Proxy:  fmt.Sprintf("%s/%s/symlinks/%s", paths.DFB(), group.Name, domainName),
+	}
+
+	domain := d.Domain{
+		Name:         domainName,
+		GroupName:    group.Name,
+		Path:         fmt.Sprintf("%s/%s", homedir, domainName),
+		ConfigPath:   fmt.Sprintf("%s/domains/%s", group.Path, domainName),
+		Repositories: "*",
+		Symlink:      s,
+	}
+
+	s.Domain = &domain
+
+	s.CreateProxy()
+	domain.SaveConfig()
 }

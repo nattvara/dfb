@@ -64,7 +64,7 @@ func (domain *Domain) parseSymlinkFromConfig() {
 	domain.Symlink = &Symlink{
 		Source: path,
 		Proxy:  fmt.Sprintf("%s/%s/symlinks/%s", paths.DFB(), domain.GroupName, domain.Name),
-		domain: domain,
+		Domain: domain,
 	}
 }
 
@@ -81,6 +81,34 @@ func Load(name string, groupName string, groupPath string) Domain {
 		domain.TemporaryPath = domain.Path + ".dfb"
 	}
 	return domain
+}
+
+// SaveConfig saves the config for the Domain
+func (domain *Domain) SaveConfig() {
+	template := `path: %s
+symlink: %s
+exclusions: **/node_modules **/.DS_Store **/venv
+repos: %s
+`
+	var symlink string
+	if domain.Symlink != nil {
+		symlink = domain.Symlink.Source
+	}
+
+	content := fmt.Sprintf(template, domain.Path, symlink, domain.Repositories)
+
+	file, err := os.Create(domain.ConfigPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	_, err = file.WriteString(content)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // CreatePathIfNotCreated will create the writable path if not created
@@ -162,10 +190,7 @@ func (domain *Domain) IsSingleFileDomain() bool {
 // meaning that its content does not exist at path but at some
 // other location
 func (domain *Domain) IsSymlinkedDomain() bool {
-	if domain.Symlink == nil {
-		return false
-	}
-	return true
+	return domain.Symlink != nil
 }
 
 // IsTemporary checks whether domain is temporary
