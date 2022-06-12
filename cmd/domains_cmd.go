@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/nattvara/dfb/internal/groups"
@@ -66,10 +68,51 @@ var lsCmd = &cobra.Command{
 	},
 }
 
+var notAddedCmd = &cobra.Command{
+	Use:   "not-added [group]",
+	Short: "List directories not added as domains in home directory",
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		group := groups.GetGroupFromString(args[0])
+
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		files, err := ioutil.ReadDir(homedir)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var notFound []string
+		domains := group.DomainsMap()
+		for _, f := range files {
+			if _, ok := domains[f.Name()]; !ok {
+				notFound = append(notFound, f.Name())
+			}
+		}
+
+		t := table.NewWriter()
+		t.SetOutputMirror(os.Stdout)
+		header := table.Row{"#", "Name"}
+		t.AppendHeader(header)
+		for i, path := range notFound {
+			t.AppendRow(table.Row{
+				i,
+				path,
+			})
+		}
+		t.Render()
+	},
+}
+
 func init() {
 	RootCmd.AddCommand(domainsCmd)
 
 	lsCmd.Flags().BoolVarP(&ListIncludeRepositories, "include-repositories", "r", false, "include repositories in output")
 	lsCmd.Flags().BoolVarP(&ListIncludeSymlink, "include-symlink", "s", false, "include symlink path in output")
 	domainsCmd.AddCommand(lsCmd)
+
+	domainsCmd.AddCommand(notAddedCmd)
 }

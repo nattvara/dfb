@@ -9,6 +9,18 @@ import (
 	"github.com/nattvara/dfb/internal/paths"
 )
 
+// GetGroupFromString checks that the provided string is a valid group and returns that Group
+func GetGroupFromString(name string) *Group {
+	groups := FetchGroups()
+	for _, group := range groups {
+		if group.Name == name {
+			return &group
+		}
+	}
+	log.Fatalf("could not find group %s\n", name)
+	return nil
+}
+
 // FetchGroups reads and returns the groups stored on disk in dfp path
 func FetchGroups() []Group {
 	files, err := ioutil.ReadDir(paths.DFB())
@@ -78,6 +90,22 @@ func (group *Group) Domains() []d.Domain {
 	for _, file := range files {
 		domain := d.Load(file.Name(), group.Name, group.Path)
 		domains = append(domains, domain)
+	}
+
+	return domains
+}
+
+// DomainsMap returns the domains belonging to the group as a map
+func (group *Group) DomainsMap() map[string]d.Domain {
+	files, err := ioutil.ReadDir(fmt.Sprintf("%s/domains", group.Path))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	domains := make(map[string]d.Domain)
+	for _, file := range files {
+		domain := d.Load(file.Name(), group.Name, group.Path)
+		domains[file.Name()] = domain
 	}
 
 	return domains
