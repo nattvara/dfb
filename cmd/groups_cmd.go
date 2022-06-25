@@ -59,19 +59,6 @@ var addGroupsCmd = &cobra.Command{
 		group := groups.New(args[0])
 		group.Create()
 
-		// domainName := args[1]
-
-		// if group.DomainExists(domainName) {
-		// 	fmt.Println("Domain already exists.")
-		// 	return
-		// }
-
-		// if CreatSymlinkPath != "" {
-		// 	group.AddDomainWithNameAndSymlink(domainName, CreatSymlinkPath)
-		// } else {
-		// 	group.AddDomainWithName(domainName)
-		// }
-
 		fmt.Printf("Group created at %s\n", group.Path)
 	},
 }
