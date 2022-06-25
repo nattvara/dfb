@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -85,6 +86,32 @@ var repoGroupsCmd = &cobra.Command{
 		t.Render()
 	},
 }
+var addRepoGroupsCmd = &cobra.Command{
+	Use:   "add-repo [group] [repo-name] [restic-repo]",
+	Short: "Add restic repo to a group",
+	Args:  cobra.MinimumNArgs(3),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		group, err := groups.GetGroupFromString(args[0])
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		repo := groups.Repository{
+			Name:       args[1],
+			ResticPath: args[2],
+		}
+
+		err = group.AddRepository(repo)
+		if err != nil {
+			log.Println(err.Error())
+			return errors.New("failed to add restic repo")
+		}
+
+		fmt.Println("repository was added")
+
+		return nil
+	},
+}
 
 func init() {
 	RootCmd.AddCommand(groupsCmd)
@@ -92,4 +119,5 @@ func init() {
 	groupsCmd.AddCommand(lsGroupsCmd)
 	groupsCmd.AddCommand(addGroupsCmd)
 	groupsCmd.AddCommand(repoGroupsCmd)
+	groupsCmd.AddCommand(addRepoGroupsCmd)
 }

@@ -209,3 +209,24 @@ func (group *Group) Repositories() []*Repository {
 
 	return repos
 }
+
+// AddRepository adds a Repository r to the config of Group g
+func (g *Group) AddRepository(r Repository) error {
+	repoConfigPath := fmt.Sprintf("%s/repos/%s", g.Path, r.Name)
+
+	file, err := os.Create(repoConfigPath)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	_, err = file.WriteString(r.ResticPath)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
