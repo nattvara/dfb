@@ -61,6 +61,23 @@ type Group struct {
 	Name string
 }
 
+// New returns a new Group with given name
+func New(name string) *Group {
+	return &Group{
+		Name: name,
+		Path: fmt.Sprintf("%s/%s", paths.DFB(), name),
+	}
+}
+
+// Create creates the necessary directories for a group
+func (group *Group) Create() {
+	os.Mkdir(group.Path, 0760)
+	os.Mkdir(group.Path+"/repos", 0760)
+	os.Mkdir(group.Path+"/domains", 0760)
+	os.Mkdir(group.Path+"/symlinks", 0760)
+	os.Mkdir(group.Path+"/stats", 0760)
+}
+
 // Mountpoint returns the path to where the group will mount restic repos
 func (group *Group) Mountpoint() string {
 	return fmt.Sprintf("%s/mountpoint", group.Path)
