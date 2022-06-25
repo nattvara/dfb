@@ -80,7 +80,10 @@ var notAddedDomainsCmd = &cobra.Command{
 	Short: "List directories not added as domains in home directory",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		group := groups.GetGroupFromString(args[0])
+		group, err := groups.GetGroupFromString(args[0])
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
 
 		homedir, err := os.UserHomeDir()
 		if err != nil {
@@ -119,7 +122,11 @@ var addDomainsCmd = &cobra.Command{
 	Short: "Add new domain",
 	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		group := groups.GetGroupFromString(args[0])
+		group, err := groups.GetGroupFromString(args[0])
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
 		domainName := args[1]
 
 		if group.DomainExists(domainName) {
@@ -142,7 +149,10 @@ var rmDomainsCmd = &cobra.Command{
 	Short: "Remove a domain",
 	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		group := groups.GetGroupFromString(args[0])
+		group, err := groups.GetGroupFromString(args[0])
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
 		domainName := args[1]
 
 		if !group.DomainExists(domainName) {

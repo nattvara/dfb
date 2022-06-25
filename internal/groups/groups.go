@@ -11,15 +11,14 @@ import (
 )
 
 // GetGroupFromString checks that the provided string is a valid group and returns that Group
-func GetGroupFromString(name string) *Group {
+func GetGroupFromString(name string) (*Group, error) {
 	groups := FetchGroups()
 	for _, group := range groups {
 		if group.Name == name {
-			return &group
+			return &group, nil
 		}
 	}
-	log.Fatalf("could not find group %s\n", name)
-	return nil
+	return nil, fmt.Errorf("could not find group %s", name)
 }
 
 // FetchGroups reads and returns the groups stored on disk in dfp path
