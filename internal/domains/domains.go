@@ -25,16 +25,18 @@ type Domain struct {
 }
 
 // ParseConfig will parse the config stored at the domains Path
-func (domain *Domain) ParseConfig() {
+func (domain *Domain) ParseConfig() error {
 	file, err := ioutil.ReadFile(domain.ConfigPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	domain.config = string(file)
 	domain.parsePathFromConfig()
 	domain.parseRepositoriesFromConfig()
 	domain.parseSymlinkFromConfig()
+
+	return nil
 }
 
 func (domain *Domain) parsePathFromConfig() {
@@ -84,7 +86,7 @@ func Load(name string, groupName string, groupPath string) Domain {
 }
 
 // SaveConfig saves the config for the Domain
-func (domain *Domain) SaveConfig() {
+func (domain *Domain) SaveConfig() error {
 	template := `path: %s
 symlink: %s
 exclusions: **/node_modules **/.DS_Store **/venv
@@ -99,24 +101,19 @@ repos: %s
 
 	file, err := os.Create(domain.ConfigPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	defer file.Close()
 
 	_, err = file.WriteString(content)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	return err
 }
 
 // DeleteConfigFile deletes the domains config file
-func (domain *Domain) DeleteConfigFile() {
-	err := os.Remove(domain.ConfigPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+func (domain *Domain) DeleteConfigFile() error {
+	return os.Remove(domain.ConfigPath)
 }
 
 // CreatePathIfNotCreated will create the writable path if not created
@@ -156,27 +153,18 @@ func (domain *Domain) WritablePathExists() bool {
 }
 
 // CreatePath creates the domains path
-func (domain *Domain) CreatePath() {
-	err := os.MkdirAll(domain.writablePath(), os.ModePerm)
-	if err != nil {
-		log.Fatal(err)
-	}
+func (domain *Domain) CreatePath() error {
+	return os.MkdirAll(domain.writablePath(), os.ModePerm)
 }
 
 // CreateTemporaryFlag writes a file to the domains path to flag it as temporary
-func (domain *Domain) CreateTemporaryFlag() {
-	err := ioutil.WriteFile(domain.TemporaryFlag(), []byte{}, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
+func (domain *Domain) CreateTemporaryFlag() error {
+	return ioutil.WriteFile(domain.TemporaryFlag(), []byte{}, 0644)
 }
 
 // DeleteTemporaryFlag will delete the the temporary flag in the domain
-func (domain *Domain) DeleteTemporaryFlag() {
-	err := os.Remove(domain.TemporaryFlag())
-	if err != nil {
-		log.Fatal(err)
-	}
+func (domain *Domain) DeleteTemporaryFlag() error {
+	return os.Remove(domain.TemporaryFlag())
 }
 
 // TemporaryFlag returns the path to the flag that indicates that a directory is temporary

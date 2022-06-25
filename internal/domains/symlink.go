@@ -1,6 +1,7 @@
 package domains
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -16,19 +17,17 @@ type Symlink struct {
 }
 
 // CreateProxy creates the proxy for the symlink
-func (symlink *Symlink) CreateProxy() {
+func (symlink *Symlink) CreateProxy() error {
 	if !symlink.Availible() {
-		log.Fatalf("could not find source for proxy at: %s", symlink.Source)
+		return fmt.Errorf("could not find source for proxy at: %s", symlink.Source)
 	}
 	os.Symlink(symlink.Source, symlink.Proxy)
+	return nil
 }
 
 // DeleteProxy deletes the symlink proxy
-func (symlink *Symlink) DeleteProxy() {
-	err := os.Remove(symlink.Proxy)
-	if err != nil {
-		log.Fatal(err)
-	}
+func (symlink *Symlink) DeleteProxy() error {
+	return os.Remove(symlink.Proxy)
 }
 
 // Availible checks if the symlinks source content is availible

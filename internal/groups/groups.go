@@ -12,7 +12,11 @@ import (
 
 // GetGroupFromString checks that the provided string is a valid group and returns that Group
 func GetGroupFromString(name string) (*Group, error) {
-	groups := FetchGroups()
+	groups, err := FetchGroups()
+	if err != nil {
+		return nil, err
+	}
+
 	for _, group := range groups {
 		if group.Name == name {
 			return &group, nil
@@ -22,10 +26,10 @@ func GetGroupFromString(name string) (*Group, error) {
 }
 
 // FetchGroups reads and returns the groups stored on disk in dfp path
-func FetchGroups() []Group {
+func FetchGroups() ([]Group, error) {
 	files, err := ioutil.ReadDir(paths.DFB())
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	var groups []Group
@@ -40,7 +44,7 @@ func FetchGroups() []Group {
 		})
 	}
 
-	return groups
+	return groups, nil
 }
 
 // NumberOfGroupsMounted counts number of mounted groups
@@ -97,10 +101,10 @@ func (group *Group) IsMounted() bool {
 }
 
 // Domains returns the domains belonging to the group
-func (group *Group) Domains() []d.Domain {
+func (group *Group) Domains() ([]d.Domain, error) {
 	files, err := ioutil.ReadDir(fmt.Sprintf("%s/domains", group.Path))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	var domains []d.Domain
@@ -109,14 +113,14 @@ func (group *Group) Domains() []d.Domain {
 		domains = append(domains, domain)
 	}
 
-	return domains
+	return domains, nil
 }
 
 // DomainsMap returns the domains belonging to the group as a map
-func (group *Group) DomainsMap() map[string]d.Domain {
+func (group *Group) DomainsMap() (map[string]d.Domain, error) {
 	files, err := ioutil.ReadDir(fmt.Sprintf("%s/domains", group.Path))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	domains := make(map[string]d.Domain)
@@ -125,22 +129,27 @@ func (group *Group) DomainsMap() map[string]d.Domain {
 		domains[file.Name()] = domain
 	}
 
-	return domains
+	return domains, nil
 }
 
 // DomainExists returns boolean if domain exists inside the given Group
 func (group *Group) DomainExists(domain string) bool {
-	if _, ok := group.DomainsMap()[domain]; ok {
+	domains, err := group.DomainsMap()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	if _, ok := domains[domain]; ok {
 		return true
 	}
 	return false
 }
 
 // AddDomainWithName adds a Domain with domainName
-func (group *Group) AddDomainWithName(domainName string) {
+func (group *Group) AddDomainWithName(domainName string) error {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	domain := d.Domain{
@@ -152,13 +161,15 @@ func (group *Group) AddDomainWithName(domainName string) {
 	}
 
 	domain.SaveConfig()
+
+	return nil
 }
 
 // AddDomainWithNameAndSymlink adds a Domain with domainName and a Symlink
-func (group *Group) AddDomainWithNameAndSymlink(domainName string, symlink string) {
+func (group *Group) AddDomainWithNameAndSymlink(domainName string, symlink string) error {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	s := &d.Symlink{
@@ -179,16 +190,18 @@ func (group *Group) AddDomainWithNameAndSymlink(domainName string, symlink strin
 
 	s.CreateProxy()
 	domain.SaveConfig()
+
+	return nil
 }
 
 // Repositories reads the configured repositories of the given group
-func (group *Group) Repositories() []*Repository {
+func (group *Group) Repositories() ([]*Repository, error) {
 	var repos []*Repository
 
 	path := group.Path + "/repos"
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	for _, f := range files {
@@ -207,7 +220,7 @@ func (group *Group) Repositories() []*Repository {
 		})
 	}
 
-	return repos
+	return repos, nil
 }
 
 // AddRepository adds a Repository r to the config of Group g

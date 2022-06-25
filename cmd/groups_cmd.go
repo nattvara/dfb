@@ -23,14 +23,19 @@ A group contians a number of domains, and restic repositories to backup those do
 var lsGroupsCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List groups",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
 
 		header := table.Row{"#", "Group"}
 		t.AppendHeader(header)
 
-		groups := groups.FetchGroups()
+		groups, err := groups.FetchGroups()
+		if err == nil {
+			log.Println(err.Error())
+			return errors.New("failed to read groups")
+		}
+
 		var i int
 		for _, group := range groups {
 			i += 1
@@ -42,6 +47,8 @@ var lsGroupsCmd = &cobra.Command{
 		}
 
 		t.Render()
+
+		return nil
 	},
 }
 
@@ -49,16 +56,19 @@ var addGroupsCmd = &cobra.Command{
 	Use:   "add [group]",
 	Short: "Add new group",
 	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := groups.GetGroupFromString(args[0])
 		if err == nil {
-			log.Fatalf("group %s already exists", args[0])
+			log.Println(err.Error())
+			return fmt.Errorf("group %s already exists", args[0])
 		}
 
 		group := groups.New(args[0])
 		group.Create()
 
 		fmt.Printf("Group created at %s\n", group.Path)
+
+		return nil
 	},
 }
 
@@ -66,17 +76,24 @@ var repoGroupsCmd = &cobra.Command{
 	Use:   "repos [group]",
 	Short: "List restic repos for a group",
 	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		group, err := groups.GetGroupFromString(args[0])
 		if err != nil {
-			log.Fatalf(err.Error())
+			log.Println(err.Error())
+			return errors.New("failed to list repos")
+		}
+
+		repos, err := group.Repositories()
+		if err != nil {
+			log.Println(err.Error())
+			return errors.New("failed to list repos")
 		}
 
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
 		header := table.Row{"#", "Name", "Repository"}
 		t.AppendHeader(header)
-		for i, repo := range group.Repositories() {
+		for i, repo := range repos {
 			t.AppendRow(table.Row{
 				i + 1,
 				repo.Name,
@@ -84,6 +101,8 @@ var repoGroupsCmd = &cobra.Command{
 			})
 		}
 		t.Render()
+
+		return nil
 	},
 }
 var addRepoGroupsCmd = &cobra.Command{
@@ -93,7 +112,8 @@ var addRepoGroupsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		group, err := groups.GetGroupFromString(args[0])
 		if err != nil {
-			log.Fatalf(err.Error())
+			log.Println(err.Error())
+			return errors.New("failed to add restic repo")
 		}
 
 		repo := groups.Repository{

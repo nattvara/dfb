@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -30,7 +31,7 @@ var CreatSymlinkPath string
 var lsDomainsCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List configured domains",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
 
@@ -43,9 +44,18 @@ var lsDomainsCmd = &cobra.Command{
 		}
 		t.AppendHeader(header)
 
-		groups := groups.FetchGroups()
+		groups, err := groups.FetchGroups()
+		if err != nil {
+			log.Println(err.Error())
+			return errors.New("failed to read groups")
+		}
+
 		for _, group := range groups {
-			domains := group.Domains()
+			domains, err := group.Domains()
+			if err != nil {
+				log.Println(err.Error())
+				return fmt.Errorf("failed to read the domains of group %s", group)
+			}
 
 			var i int
 			for _, domain := range domains {
@@ -72,6 +82,8 @@ var lsDomainsCmd = &cobra.Command{
 		}
 
 		t.Render()
+
+		return nil
 	},
 }
 
@@ -79,24 +91,32 @@ var notAddedDomainsCmd = &cobra.Command{
 	Use:   "not-added [group]",
 	Short: "List directories not added as domains in home directory",
 	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		group, err := groups.GetGroupFromString(args[0])
 		if err != nil {
-			log.Fatalf(err.Error())
+			return errors.New(err.Error())
 		}
 
 		homedir, err := os.UserHomeDir()
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err.Error())
+			return errors.New("failed to list domains")
 		}
 
 		files, err := ioutil.ReadDir(homedir)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err.Error())
+			return errors.New("failed to list domains")
 		}
 
 		var notFound []string
-		domains := group.DomainsMap()
+
+		domains, err := group.DomainsMap()
+		if err != nil {
+			log.Println(err.Error())
+			return errors.New("failed to read domains")
+		}
+
 		for _, f := range files {
 			if _, ok := domains[f.Name()]; !ok {
 				notFound = append(notFound, f.Name())
@@ -114,6 +134,8 @@ var notAddedDomainsCmd = &cobra.Command{
 			})
 		}
 		t.Render()
+
+		return nil
 	},
 }
 
@@ -121,17 +143,16 @@ var addDomainsCmd = &cobra.Command{
 	Use:   "add [group] [domain]",
 	Short: "Add new domain",
 	Args:  cobra.MinimumNArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		group, err := groups.GetGroupFromString(args[0])
 		if err != nil {
-			log.Fatalf(err.Error())
+			return errors.New(err.Error())
 		}
 
 		domainName := args[1]
 
 		if group.DomainExists(domainName) {
-			fmt.Println("Domain already exists.")
-			return
+			return errors.New("domain already exists")
 		}
 
 		if CreatSymlinkPath != "" {
@@ -140,7 +161,9 @@ var addDomainsCmd = &cobra.Command{
 			group.AddDomainWithName(domainName)
 		}
 
-		fmt.Println("Domain created.")
+		fmt.Println("Domain created")
+
+		return nil
 	},
 }
 
@@ -148,18 +171,24 @@ var rmDomainsCmd = &cobra.Command{
 	Use:   "rm [group] [domain]",
 	Short: "Remove a domain",
 	Args:  cobra.MinimumNArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		group, err := groups.GetGroupFromString(args[0])
 		if err != nil {
-			log.Fatalf(err.Error())
+			return errors.New(err.Error())
 		}
+
 		domainName := args[1]
 
 		if !group.DomainExists(domainName) {
-			log.Fatalf("Domain %s doesn't exists.", domainName)
+			return fmt.Errorf("domain %s doesn't exists", domainName)
 		}
 
-		domain := group.DomainsMap()[domainName]
+		domains, err := group.DomainsMap()
+		if err != nil {
+			return err
+		}
+
+		domain := domains[domainName]
 
 		fmt.Printf("deleting record of domain %s\n", domainName)
 		domain.DeleteConfigFile()
@@ -175,6 +204,8 @@ NOTE: this does not delete the actual directory
       neither will it be removed from previous backups
       you will have to delete the data of "%s" yourself
 		`, domainName)
+
+		return nil
 	},
 }
 
