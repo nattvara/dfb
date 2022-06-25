@@ -27,7 +27,7 @@ var ListIncludeRepositories bool
 var ListIncludeSymlink bool
 var CreatSymlinkPath string
 
-var lsCmd = &cobra.Command{
+var lsDomainsCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List configured domains",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -75,7 +75,7 @@ var lsCmd = &cobra.Command{
 	},
 }
 
-var notAddedCmd = &cobra.Command{
+var notAddedDomainsCmd = &cobra.Command{
 	Use:   "not-added [group]",
 	Short: "List directories not added as domains in home directory",
 	Args:  cobra.MinimumNArgs(1),
@@ -114,7 +114,7 @@ var notAddedCmd = &cobra.Command{
 	},
 }
 
-var addCmd = &cobra.Command{
+var addDomainsCmd = &cobra.Command{
 	Use:   "add [group] [domain]",
 	Short: "Add new domain",
 	Args:  cobra.MinimumNArgs(2),
@@ -137,7 +137,7 @@ var addCmd = &cobra.Command{
 	},
 }
 
-var rmCmd = &cobra.Command{
+var rmDomainsCmd = &cobra.Command{
 	Use:   "rm [group] [domain]",
 	Short: "Remove a domain",
 	Args:  cobra.MinimumNArgs(2),
@@ -171,14 +171,14 @@ NOTE: this does not delete the actual directory
 func init() {
 	RootCmd.AddCommand(domainsCmd)
 
-	lsCmd.Flags().BoolVarP(&ListIncludeRepositories, "include-repositories", "r", false, "include repositories in output")
-	lsCmd.Flags().BoolVarP(&ListIncludeSymlink, "include-symlink", "s", false, "include symlink path in output")
-	domainsCmd.AddCommand(lsCmd)
+	lsDomainsCmd.Flags().BoolVarP(&ListIncludeRepositories, "include-repositories", "r", false, "include repositories in output")
+	lsDomainsCmd.Flags().BoolVarP(&ListIncludeSymlink, "include-symlink", "s", false, "include symlink path in output")
+	domainsCmd.AddCommand(lsDomainsCmd)
 
-	domainsCmd.AddCommand(notAddedCmd)
+	domainsCmd.AddCommand(notAddedDomainsCmd)
 
-	addCmd.Flags().StringVarP(&CreatSymlinkPath, "symlink", "s", "", "domain content is symlinked to another location")
-	domainsCmd.AddCommand(addCmd)
+	addDomainsCmd.Flags().StringVarP(&CreatSymlinkPath, "symlink", "s", "", "domain content is symlinked to another location")
+	domainsCmd.AddCommand(addDomainsCmd)
 
-	domainsCmd.AddCommand(rmCmd)
+	domainsCmd.AddCommand(rmDomainsCmd)
 }
