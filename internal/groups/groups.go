@@ -180,3 +180,32 @@ func (group *Group) AddDomainWithNameAndSymlink(domainName string, symlink strin
 	s.CreateProxy()
 	domain.SaveConfig()
 }
+
+// Repositories reads the configured repositories of the given group
+func (group *Group) Repositories() []*Repository {
+	var repos []*Repository
+
+	path := group.Path + "/repos"
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, f := range files {
+		if f.IsDir() {
+			continue
+		}
+
+		content, err := ioutil.ReadFile(path + "/" + f.Name())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		repos = append(repos, &Repository{
+			Name:       f.Name(),
+			ResticPath: string(content),
+		})
+	}
+
+	return repos
+}

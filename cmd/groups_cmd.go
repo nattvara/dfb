@@ -54,12 +54,35 @@ var addGroupsCmd = &cobra.Command{
 			log.Fatalf("group %s already exists", args[0])
 		}
 
-		fmt.Println(args[0])
-
 		group := groups.New(args[0])
 		group.Create()
 
 		fmt.Printf("Group created at %s\n", group.Path)
+	},
+}
+
+var repoGroupsCmd = &cobra.Command{
+	Use:   "repos [group]",
+	Short: "List restic repos for a group",
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		group, err := groups.GetGroupFromString(args[0])
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+
+		t := table.NewWriter()
+		t.SetOutputMirror(os.Stdout)
+		header := table.Row{"#", "Name", "Repository"}
+		t.AppendHeader(header)
+		for i, repo := range group.Repositories() {
+			t.AppendRow(table.Row{
+				i + 1,
+				repo.Name,
+				repo.ResticPath,
+			})
+		}
+		t.Render()
 	},
 }
 
@@ -68,4 +91,5 @@ func init() {
 
 	groupsCmd.AddCommand(lsGroupsCmd)
 	groupsCmd.AddCommand(addGroupsCmd)
+	groupsCmd.AddCommand(repoGroupsCmd)
 }
