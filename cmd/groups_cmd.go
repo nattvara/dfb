@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// groupsCmd represents the domains command
 var groupsCmd = &cobra.Command{
 	Use:   "groups",
 	Short: "Group commands",
@@ -31,7 +30,7 @@ var lsGroupsCmd = &cobra.Command{
 		t.AppendHeader(header)
 
 		groups, err := groups.FetchGroups()
-		if err == nil {
+		if err != nil {
 			log.Println(err.Error())
 			return errors.New("failed to read groups")
 		}
@@ -58,7 +57,7 @@ var addGroupsCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, err := groups.GetGroupFromString(args[0])
-		if err == nil {
+		if err != nil {
 			log.Println(err.Error())
 			return fmt.Errorf("group %s already exists", args[0])
 		}
