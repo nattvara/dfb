@@ -157,7 +157,7 @@ func (group *Group) AddDomainWithName(domainName string) error {
 		GroupName:    group.Name,
 		Path:         fmt.Sprintf("%s/%s", homedir, domainName),
 		ConfigPath:   fmt.Sprintf("%s/domains/%s", group.Path, domainName),
-		Repositories: "*",
+		Repositories: AllRepositories,
 	}
 
 	domain.SaveConfig()
@@ -182,7 +182,7 @@ func (group *Group) AddDomainWithNameAndSymlink(domainName string, symlink strin
 		GroupName:    group.Name,
 		Path:         fmt.Sprintf("%s/%s", homedir, domainName),
 		ConfigPath:   fmt.Sprintf("%s/domains/%s", group.Path, domainName),
-		Repositories: "*",
+		Repositories: AllRepositories,
 		Symlink:      s,
 	}
 
@@ -221,6 +221,22 @@ func (group *Group) Repositories() ([]*Repository, error) {
 	}
 
 	return repos, nil
+}
+
+// GetRepositoryByName returns the Repository from Group g with name if it exists
+func (g *Group) GetRepositoryByName(name string) (*Repository, error) {
+	repos, err := g.Repositories()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, repo := range repos {
+		if repo.Name == name {
+			return repo, nil
+		}
+	}
+
+	return nil, fmt.Errorf("did not find a repo with the name %s", name)
 }
 
 // AddRepository adds a Repository r to the config of Group g

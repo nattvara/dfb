@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// domainsCmd represents the domains command
 var domainsCmd = &cobra.Command{
 	Use:   "domains",
 	Short: "Domain commands",

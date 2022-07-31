@@ -20,6 +20,7 @@ type Domain struct {
 	TemporaryPath string   // If Path does not exist a temporary path will be created, this might differ from Path
 	ConfigPath    string   // Path to domain config ~/.dfb/[group]/domains/domain
 	Repositories  string   // Comma separated list of repositories
+	Exclusions    string   // Files to exclude during backup
 	config        string   // Config content
 	Symlink       *Symlink // Path to real domain src if it's a symlinked domain
 }
@@ -35,6 +36,7 @@ func (domain *Domain) ParseConfig() error {
 	domain.parsePathFromConfig()
 	domain.parseRepositoriesFromConfig()
 	domain.parseSymlinkFromConfig()
+	domain.parseExclusionsFromConfig()
 
 	return nil
 }
@@ -47,6 +49,11 @@ func (domain *Domain) parsePathFromConfig() {
 func (domain *Domain) parseRepositoriesFromConfig() {
 	var re = regexp.MustCompile(`(?m)repos: (.*)\n`)
 	domain.Repositories = re.FindStringSubmatch(domain.config)[1]
+}
+
+func (domain *Domain) parseExclusionsFromConfig() {
+	var re = regexp.MustCompile(`(?m)exclusions: (.*)\n`)
+	domain.Exclusions = re.FindStringSubmatch(domain.config)[1]
 }
 
 func (domain *Domain) parseSymlinkFromConfig() {
@@ -238,4 +245,8 @@ func (domain *Domain) backupLinkTargetPath() string {
 
 func (domain *Domain) backupLinkSourcePath(mountpoint string) string {
 	return fmt.Sprintf("%s/tags/%s", mountpoint, domain.Name)
+}
+
+func (domain *Domain) RepositoriesContain(repo string) bool {
+	return strings.Contains(domain.Repositories, repo)
 }

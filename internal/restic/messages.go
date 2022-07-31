@@ -148,7 +148,7 @@ func timeToString(s int) string {
 	return fmt.Sprintf("%vh %vmin %vs", hours, minutes, seconds)
 }
 
-// bytesToString formats a float64 of bytes to a nicely formatted
+// bytesToString formats a int of bytes to a nicely formatted
 // string eg. 289.0 MiB 3.1 GiB
 //
 // source: https://yourbasic.org/golang/formatting-byte-size-to-human-readable-format/
